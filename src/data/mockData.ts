@@ -1,5 +1,46 @@
 import type { Transaction } from '@/components/Transactions/TransactionList'
 import type { BudgetCategory } from '@/components/Budget/BudgetTracker'
+import type { Alert } from '@/components/Cards/ActiveAlertsPreview'
+
+// ── Dashboard summary (fetched by MetricRow) ──────────────────────────────────
+
+export interface DashboardSummary {
+  netWorth:       number
+  monthlySpending:number
+  totalSavings:   number
+}
+
+export const dashboardSummary: DashboardSummary = {
+  netWorth:        1248500,
+  monthlySpending:  3870,
+  totalSavings:     84240,
+}
+
+// ── Active alerts ─────────────────────────────────────────────────────────────
+
+export const activeAlerts: Alert[] = [
+  {
+    id:       'alert-1',
+    severity: 'warning',
+    title:    'Entertainment budget at 87%',
+    body:     '11 days remaining. Consider reallocating from Travel.',
+    time:     '2 hours ago',
+  },
+  {
+    id:       'alert-2',
+    severity: 'error',
+    title:    'Unusual transaction flagged',
+    body:     'Stripe Inc. charge of $59 flagged for review.',
+    time:     '5 hours ago',
+  },
+  {
+    id:       'alert-3',
+    severity: 'info',
+    title:    'Portfolio rebalancing due',
+    body:     'Tech allocation 4.2% above target. Review recommended.',
+    time:     'Yesterday',
+  },
+]
 
 // ── KPI Stats ─────────────────────────────────────────────────────────────────
 export const kpiStats = [

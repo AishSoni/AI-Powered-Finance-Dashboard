@@ -1,20 +1,25 @@
 import type { CSSProperties, FC } from 'react'
 import PageHeader from '@/components/Header/PageHeader'
-import { MetricCard, InsightCard } from '@/components/Cards/MetricCard'
+import MetricRow from '@/components/Cards/MetricRow'
+import { ProStrategyCard } from '@/components/AIInsights/ProStrategyCard'
+import { InsightCard } from '@/components/AIInsights/InsightCard'
+import { ActiveAlertsPreview } from '@/components/Cards/ActiveAlertsPreview'
 import TransactionList from '@/components/Transactions/TransactionList'
 import BudgetTracker from '@/components/Budget/BudgetTracker'
-import { kpiStats, aiInsights, mockTransactions, budgetCategories, portfolioAllocation } from '@/data/mockData'
+import {
+  aiInsights, mockTransactions, budgetCategories,
+  portfolioAllocation, activeAlerts,
+} from '@/data/mockData'
 
-// ── Mini portfolio donut ───────────────────────────────────────────────────────
+// ─── Portfolio donut ──────────────────────────────────────────────────────────
+
 const PortfolioDonut: FC = () => {
-  // Build conic-gradient from allocation data
   let cursor = 0
   const stops = portfolioAllocation.map((slice) => {
     const from = cursor
     cursor += slice.pct
     return `${slice.color} ${from}% ${cursor}%`
   })
-  const gradient = `conic-gradient(${stops.join(', ')})`
 
   return (
     <div className="card" style={s.donutCard}>
@@ -22,16 +27,14 @@ const PortfolioDonut: FC = () => {
         <span style={s.cardTitle}>Asset Allocation</span>
         <span className="badge badge-primary">Live</span>
       </div>
-
       <div style={s.donutWrap}>
-        <div style={{ ...s.donut, background: gradient }}>
+        <div style={{ ...s.donut, background: `conic-gradient(${stops.join(', ')})` }}>
           <div style={s.donutHole}>
             <div style={s.donutTotal}>$1.25M</div>
             <div style={s.donutSub}>Total AUM</div>
           </div>
         </div>
       </div>
-
       <div style={s.legend}>
         {portfolioAllocation.map((slice) => (
           <div key={slice.name} style={s.legendRow}>
@@ -46,23 +49,13 @@ const PortfolioDonut: FC = () => {
   )
 }
 
-// ── Alert banner ──────────────────────────────────────────────────────────────
-const AlertBanner: FC<{ message: string; type: 'warning' | 'error' }> = ({ message, type }) => {
-  const bg   = type === 'error' ? 'var(--color-error-muted)'   : 'rgba(245,166,35,0.09)'
-  const color= type === 'error' ? 'var(--color-error)'          : 'var(--color-warning-light)'
-  const icon = type === 'error' ? '⚠' : '◈'
-  return (
-    <div style={{ ...s.alert, background: bg, borderColor: color }}>
-      <span style={{ color, fontSize: '0.875rem' }}>{icon}</span>
-      <span style={{ ...s.alertText, color }}>{message}</span>
-    </div>
-  )
-}
+// ─── Dashboard page ───────────────────────────────────────────────────────────
 
-// ── Main Dashboard page ───────────────────────────────────────────────────────
 const Dashboard: FC = () => {
   return (
     <div style={s.page}>
+
+      {/* ── Page header ── */}
       <PageHeader
         title="Wealth Dashboard"
         subtitle="Q2 2026 · Proton Finance"
@@ -74,188 +67,150 @@ const Dashboard: FC = () => {
         }
       />
 
-      {/* ── Alert strip ── */}
-      <div style={s.alertStrip}>
-        <AlertBanner type="warning" message="Entertainment budget is 87% spent — 11 days remaining in June." />
+      {/* ── Row 1: Metric cards + Active Alerts ── */}
+      <div style={s.row1}>
+        <div style={s.metricCol}>
+          <MetricRow />
+        </div>
+        <div style={s.alertCol}>
+          <ActiveAlertsPreview alerts={activeAlerts} compact />
+        </div>
       </div>
 
-      {/* ── Bento row 1: KPI cards ── */}
-      <div style={s.kpiGrid} aria-label="Key performance indicators">
-        {kpiStats.map((stat) => (
-          <MetricCard
-            key={stat.id}
-            label={stat.label}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            subLabel={stat.subLabel}
-            accent={stat.id === 'aum'}
-          />
-        ))}
-      </div>
+      {/* ── Row 2: Pro Strategy hero card ── */}
+      <ProStrategyCard
+        insightId="strategy-q3-2026"
+        headline="Optimizing your portfolio for the upcoming Q3 market shift."
+        body="Our AI models detect elevated volatility signals in growth equities. Rotating 8% of your NVDA position into short-duration Treasuries could reduce drawdown risk by an estimated 14% while preserving 92% of upside capture."
+      />
 
-      {/* ── Bento row 2: Donut + AI Insights + Budget ── */}
-      <div style={s.row2}>
-        {/* Column A: Portfolio donut */}
-        <div style={s.colA}>
+      {/* ── Row 3: Donut + AI Insights + Budget ── */}
+      <div style={s.row3}>
+        <div style={s.col3A}>
           <PortfolioDonut />
         </div>
-
-        {/* Column B: AI Insights */}
-        <div style={s.colB}>
-          <div style={s.colBHeader}>
-            <span style={s.sectionTitle}>AI Insights</span>
-          </div>
+        <div style={s.col3B}>
+          <div style={s.sectionTitle}>AI Insights</div>
           <div style={s.insightsList}>
             {aiInsights.map((insight) => (
               <InsightCard key={insight.id} {...insight} />
             ))}
           </div>
         </div>
-
-        {/* Column C: Budget tracker */}
-        <div style={s.colC}>
+        <div style={s.col3C}>
           <BudgetTracker categories={budgetCategories} />
         </div>
       </div>
 
-      {/* ── Bento row 3: Transactions (full-width) ── */}
-      <div style={s.row3}>
-        <TransactionList transactions={mockTransactions} />
-      </div>
+      {/* ── Row 4: Transactions ── */}
+      <TransactionList transactions={mockTransactions} />
     </div>
   )
 }
 
 export default Dashboard
 
-/* ── Styles ── */
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const s: Record<string, CSSProperties> = {
   page: {
-    padding: 'var(--space-6)',
-    maxWidth: 'var(--content-max-width)',
-    display: 'flex',
+    padding:       'var(--space-6)',
+    maxWidth:      'var(--content-max-width)',
+    display:       'flex',
     flexDirection: 'column',
-    gap: 'var(--space-4)',
+    gap:            16,
   },
-  alertStrip: {},
-  alert: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-3)',
-    padding: 'var(--space-3) var(--space-4)',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid transparent',
-  },
-  alertText: {
-    font: 'var(--font-body-sm)',
-    fontFamily: 'var(--font-family)',
-    fontWeight: 500,
-  },
-  kpiGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: 'var(--space-4)',
-  },
-  row2: {
-    display: 'grid',
-    gridTemplateColumns: '320px 1fr 280px',
-    gap: 'var(--space-4)',
-    alignItems: 'start',
-  },
-  colA: {},
-  colB: { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' },
-  colBHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: {
-    font: 'var(--font-heading-sm)',
-    fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-primary)',
-  },
-  insightsList: { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' },
-  colC: {},
-  row3: {},
 
-  // Donut
-  donutCard: { padding: 'var(--space-5)' },
+  // Row 1: metrics (flex-1) + alerts panel (fixed 260px)
+  row1: {
+    display:    'flex',
+    gap:         16,
+    alignItems: 'flex-start',
+  },
+  metricCol: { flex: 1, minWidth: 0 },
+  alertCol:  { width: 260, flexShrink: 0 },
+
+  // Row 3: 3-col bento
+  row3: {
+    display:             'grid',
+    gridTemplateColumns: '300px 1fr 280px',
+    gap:                  16,
+    alignItems:          'start',
+  },
+  col3A: {},
+  col3B: { display: 'flex', flexDirection: 'column', gap: 12 },
+  col3C: {},
+
+  sectionTitle: {
+    fontSize:   14,
+    fontFamily: 'var(--font-family)',
+    fontWeight:  700,
+    color:      'var(--color-text-primary)',
+    marginBottom: 4,
+  },
+  insightsList: { display: 'flex', flexDirection: 'column', gap: 10 },
+
+  // Donut card
+  donutCard: { padding: 20 },
   donutHeader: {
-    display: 'flex',
-    alignItems: 'center',
+    display:        'flex',
+    alignItems:     'center',
     justifyContent: 'space-between',
-    marginBottom: 'var(--space-5)',
+    marginBottom:    16,
   },
   cardTitle: {
-    font: 'var(--font-heading-sm)',
+    fontSize:   14,
     fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-primary)',
+    fontWeight:  700,
+    color:      'var(--color-text-primary)',
   },
   donutWrap: {
-    display: 'flex',
+    display:        'flex',
     justifyContent: 'center',
-    marginBottom: 'var(--space-5)',
+    marginBottom:    16,
   },
   donut: {
-    width: '160px',
-    height: '160px',
+    width:        160,
+    height:       160,
     borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: 'var(--shadow-elevated)',
+    display:      'flex',
+    alignItems:   'center',
+    justifyContent:'center',
+    boxShadow:    'var(--shadow-elevated)',
   },
   donutHole: {
-    width: '96px',
-    height: '96px',
+    width:         96,
+    height:        96,
     borderRadius: '50%',
-    background: 'var(--color-bg-surface)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '2px',
+    background:   'var(--color-bg-surface)',
+    display:      'flex',
+    flexDirection:'column',
+    alignItems:   'center',
+    justifyContent:'center',
+    gap:           2,
   },
   donutTotal: {
-    font: 'var(--font-heading-md)',
-    fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-primary)',
-    fontWeight: 700,
-    letterSpacing: '-0.02em',
-    lineHeight: 1.1,
+    fontSize:     16,
+    fontFamily:  'var(--font-family)',
+    fontWeight:   700,
+    color:       'var(--color-text-primary)',
+    letterSpacing:'-0.02em',
+    lineHeight:   1.1,
   },
   donutSub: {
-    font: 'var(--font-label-sm)',
+    fontSize:   10,
     fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-tertiary)',
+    color:      'var(--color-text-tertiary)',
   },
-  legend: { display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' },
+  legend:    { display: 'flex', flexDirection: 'column', gap: 8 },
   legendRow: {
-    display: 'grid',
+    display:             'grid',
     gridTemplateColumns: '8px 1fr auto auto',
-    alignItems: 'center',
-    gap: 'var(--space-2)',
+    alignItems:          'center',
+    gap:                  8,
   },
-  legendDot: { width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0 },
-  legendName: {
-    font: 'var(--font-body-sm)',
-    fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-secondary)',
-  },
-  legendPct: {
-    font: 'var(--font-label-md)',
-    fontFamily: 'var(--font-family)',
-    fontWeight: 600,
-    color: 'var(--color-text-primary)',
-    minWidth: '30px',
-    textAlign: 'right',
-  },
-  legendVal: {
-    font: 'var(--font-label-md)',
-    fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-tertiary)',
-    minWidth: '60px',
-    textAlign: 'right',
-  },
+  legendDot:  { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
+  legendName: { fontSize: 12, fontFamily: 'var(--font-family)', color: 'var(--color-text-secondary)' },
+  legendPct:  { fontSize: 12, fontFamily: 'var(--font-family)', fontWeight: 600, color: 'var(--color-text-primary)', minWidth: 28, textAlign: 'right' },
+  legendVal:  { fontSize: 12, fontFamily: 'var(--font-family)', color: 'var(--color-text-tertiary)', minWidth: 60, textAlign: 'right' },
 }
