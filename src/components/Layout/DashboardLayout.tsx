@@ -1,21 +1,13 @@
 import type { FC, ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import type { SidebarProps } from './Sidebar'
+import './DashboardLayout.css'
 
 interface DashboardLayoutProps extends SidebarProps {
   children: ReactNode
   headerSlot?: ReactNode
 }
 
-/**
- * Root shell for all authenticated pages.
- *
- * Structure:
- *   <aside>  — fixed 240px dark Sidebar
- *   <main>   — scrollable content area (bg-base, no padding — pages own their spacing)
- *     <header> — sticky top bar (passed via headerSlot)
- *     page content (children)
- */
 const DashboardLayout: FC<DashboardLayoutProps> = ({
   activePage,
   onNavigate,
@@ -23,12 +15,12 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
   children,
 }) => {
   return (
-    <div style={s.shell}>
+    <div className="dashboard-shell" style={s.shell}>
       {/* Fixed sidebar — always dark */}
       <Sidebar activePage={activePage} onNavigate={onNavigate} />
 
       {/* Scrollable main column */}
-      <main style={s.main} id="main-content">
+      <main className="dashboard-main" style={s.main} id="main-content">
         {headerSlot && (
           <header style={s.headerWrapper}>
             {headerSlot}

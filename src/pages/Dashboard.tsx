@@ -11,6 +11,7 @@ import {
   aiInsights, budgetCategories, portfolioAllocation,
   activeAlerts, spendingCategories,
 } from '@/data/mockData'
+import './Dashboard.css'
 
 // ─── Portfolio donut ──────────────────────────────────────────────────────────
 
@@ -54,7 +55,7 @@ const PortfolioDonut: FC = () => {
 
 const Dashboard: FC = () => {
   return (
-    <div style={s.page}>
+    <div className="dashboard-page" style={s.page}>
 
       {/* ── Page header ── */}
       <PageHeader
@@ -69,28 +70,30 @@ const Dashboard: FC = () => {
       />
 
       {/* ── Row 1: Metric cards + Active Alerts ── */}
-      <div style={s.row1}>
-        <div style={s.metricCol}>
+      <div className="dashboard-row1" style={s.row1}>
+        <div className="dashboard-metric-col" style={s.metricCol}>
           <MetricRow />
         </div>
-        <div style={s.alertCol}>
+        <div className="dashboard-alert-col" style={s.alertCol}>
           <ActiveAlertsPreview alerts={activeAlerts} compact />
         </div>
       </div>
 
       {/* ── Row 2: Pro Strategy hero card ── */}
-      <ProStrategyCard
-        insightId="strategy-q3-2026"
-        headline="Optimizing your portfolio for the upcoming Q3 market shift."
-        body="Our AI models detect elevated volatility signals in growth equities. Rotating 8% of your NVDA position into short-duration Treasuries could reduce drawdown risk by an estimated 14% while preserving 92% of upside capture."
-      />
+      <div className="dashboard-strategy-card">
+        <ProStrategyCard
+          insightId="strategy-q3-2026"
+          headline="Optimizing your portfolio for the upcoming Q3 market shift."
+          body="Our AI models detect elevated volatility signals in growth equities. Rotating 8% of your NVDA position into short-duration Treasuries could reduce drawdown risk by an estimated 14% while preserving 92% of upside capture."
+        />
+      </div>
 
       {/* ── Row 3: Donut + AI Insights + Budget ── */}
-      <div style={s.row3}>
-        <div style={s.col3A}>
+      <div className="dashboard-row3" style={s.row3}>
+        <div className="dashboard-col3a" style={s.col3A}>
           <PortfolioDonut />
         </div>
-        <div style={s.col3B}>
+        <div className="dashboard-col3b" style={s.col3B}>
           <div style={s.sectionTitle}>AI Insights</div>
           <div style={s.insightsList}>
             {aiInsights.map((insight) => (
@@ -98,16 +101,16 @@ const Dashboard: FC = () => {
             ))}
           </div>
         </div>
-        <div style={s.col3C}>
+        <div className="dashboard-col3c" style={s.col3C}>
           <BudgetTracker categories={budgetCategories} />
         </div>
       </div>
 
-      <div style={s.row4}>
-        <div style={s.spendingCol}>
+      <div className="dashboard-row4" style={s.row4}>
+        <div className="dashboard-spending-col" style={s.spendingCol}>
           <SpendingComposition categories={spendingCategories} />
         </div>
-        <div style={s.activityCol}>
+        <div className="dashboard-activity-col" style={s.activityCol}>
           <RecentActivity />
         </div>
       </div>

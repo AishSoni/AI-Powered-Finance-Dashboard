@@ -4,27 +4,31 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import DashboardLayout from '@/components/Layout/DashboardLayout'
 import Header from '@/components/Header/Header'
 import Dashboard from '@/pages/Dashboard'
+import { MobileBottomNav } from '@/components/Layout/MobileBottomNav'
 
 // ── Page registry — extend as new pages are built ─────────────────────────────
 const PAGES: Record<string, React.ReactNode> = {
   dashboard:    <Dashboard />,
-  accounts:     <Dashboard />, // placeholder
-  transactions: <Dashboard />, // placeholder
-  budgets:      <Dashboard />, // placeholder
-  insights:     <Dashboard />, // placeholder
+  accounts:     <Dashboard />, 
+  transactions: <Dashboard />, 
+  budgets:      <Dashboard />,
+  insights:     <Dashboard />, 
 }
 
 function AppShell() {
   const [activePage, setActivePage] = useState('dashboard')
 
   return (
-    <DashboardLayout
-      activePage={activePage}
-      onNavigate={setActivePage}
-      headerSlot={<Header unreadAlerts={3} />}
-    >
-      {PAGES[activePage] ?? <Dashboard />}
-    </DashboardLayout>
+    <>
+      <DashboardLayout
+        activePage={activePage}
+        onNavigate={setActivePage}
+        headerSlot={<Header unreadAlerts={3} />}
+      >
+        {PAGES[activePage] ?? <Dashboard />}
+      </DashboardLayout>
+      <MobileBottomNav />
+    </>
   )
 }
 

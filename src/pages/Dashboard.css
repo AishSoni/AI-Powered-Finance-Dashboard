@@ -1,0 +1,47 @@
+/* Mobile responsive styles for Dashboard */
+
+@media (max-width: 767px) {
+  /* Page: single column, reduced padding */
+  .dashboard-page {
+    padding: 16px !important;
+  }
+
+  /* Row 1: stack vertically */
+  .dashboard-row1 {
+    flex-direction: column !important;
+  }
+
+  .dashboard-metric-col {
+    width: 100% !important;
+  }
+
+  .dashboard-alert-col {
+    width: 100% !important;
+  }
+
+  /* Strategy card: full width */
+  .dashboard-strategy-card {
+    width: 100%;
+  }
+
+  /* Row 3: stack vertically */
+  .dashboard-row3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-col3a,
+  .dashboard-col3b,
+  .dashboard-col3c {
+    width: 100% !important;
+  }
+
+  /* Row 4: stack vertically */
+  .dashboard-row4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-spending-col,
+  .dashboard-activity-col {
+    width: 100% !important;
+  }
+}

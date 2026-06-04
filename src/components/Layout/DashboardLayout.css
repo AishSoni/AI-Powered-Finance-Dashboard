@@ -1,0 +1,18 @@
+/* Mobile: hide sidebar, full width main */
+@media (max-width: 767px) {
+  .dashboard-shell > aside {
+    display: none;
+  }
+  
+  .dashboard-main {
+    margin-left: 0 !important;
+    padding-bottom: 60px; /* Space for bottom nav */
+  }
+}
+
+/* Desktop: sidebar visible, bottom nav hidden */
+@media (min-width: 768px) {
+  .mobile-bottom-nav {
+    display: none;
+  }
+}
