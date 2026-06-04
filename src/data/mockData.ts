@@ -2,6 +2,7 @@ import type { Transaction } from '@/components/Transactions/TransactionList'
 import type { BudgetCategory } from '@/components/Budget/BudgetTracker'
 import type { Alert } from '@/components/Cards/ActiveAlertsPreview'
 import type { SpendingCategory } from '@/components/Spending/SpendingComposition'
+import type { CategoryStatus } from '@/components/Budget/CategoryBudgetCard'
 
 // ── Dashboard summary (fetched by MetricRow) ──────────────────────────────────
 
@@ -132,3 +133,44 @@ export const spendingCategories: SpendingCategory[] = [
   { label: 'Utilities',    pct: 6,  color: '#555E72',               amount: 145  },
 ]
 
+// ── Budget Page Data ─────────────────────────────────────────────────────────────
+
+export interface BudgetCategoryExtended {
+  category: string
+  iconColor: string
+  status: CategoryStatus
+  spent: number
+  limit: number
+}
+
+export interface BudgetPageData {
+  fiscalPeriod: string
+  totalSpent: number
+  totalLimit: number
+  daysRemaining: number
+  projectedSurplus: number
+  savingsEfficiency: number
+  categories: BudgetCategoryExtended[]
+}
+
+export const budgetPageData: BudgetPageData = {
+  fiscalPeriod: 'October 2023',
+  totalSpent: 12450,
+  totalLimit: 15000,
+  daysRemaining: 10,
+  projectedSurplus: 2550,
+  savingsEfficiency: 94.2,
+  categories: [
+    { category: 'Housing', iconColor: '#0058BE', status: 'FIXED', spent: 2400, limit: 2500 },
+    { category: 'Food & Dining', iconColor: '#00A86B', status: 'HEALTHY', spent: 642.50, limit: 900 },
+    { category: 'Transportation', iconColor: '#F5A623', status: 'OPTIMAL', spent: 320, limit: 400 },
+    { category: 'Entertainment', iconColor: '#D93025', status: 'CRITICAL', spent: 870, limit: 600 },
+  ],
+}
+
+// Simulated async fetch function
+export async function fetchBudget(): Promise<BudgetPageData> {
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return budgetPageData
+}
