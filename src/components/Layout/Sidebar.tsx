@@ -1,295 +1,365 @@
 import type { CSSProperties, FC } from 'react'
+import React from 'react'
+import {
+  LayoutDashboard, Building2, ArrowLeftRight,
+  Wallet, Sparkles, HelpCircle, LogOut,
+  Sun, Moon, Zap,
+} from 'lucide-react'
 import { useTheme } from '@/context/ThemeContext'
+import { useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
 
-// ── Icons (inline SVG, no deps) ───────────────────────────────────────────────
-const IconDashboard = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-    <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-  </svg>
-)
-const IconPortfolio = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-  </svg>
-)
-const IconBudget = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-  </svg>
-)
-const IconTransactions = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" />
-    <line x1="8" y1="18" x2="21" y2="18" /><polyline points="3 6 4 7 6 5" />
-    <polyline points="3 12 4 13 6 11" /><polyline points="3 18 4 19 6 17" />
-  </svg>
-)
-const IconAlerts = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-)
-const IconSun = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-)
-const IconMoon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-)
+// ─── Nav definition ───────────────────────────────────────────────────────────
 
-const navItems = [
-  { id: 'dashboard',     label: 'Dashboard',    icon: <IconDashboard /> },
-  { id: 'portfolio',     label: 'Portfolio',    icon: <IconPortfolio /> },
-  { id: 'budget',        label: 'Budget',       icon: <IconBudget /> },
-  { id: 'transactions',  label: 'Transactions', icon: <IconTransactions /> },
-  { id: 'alerts',        label: 'Alerts',       icon: <IconAlerts />, badge: 3 },
+interface NavItem {
+  id: string
+  label: string
+  Icon: React.FC<{ size?: number; strokeWidth?: number }>
+  badge?: number
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard',    label: 'Dashboard',    Icon: LayoutDashboard },
+  { id: 'accounts',     label: 'Accounts',     Icon: Building2 },
+  { id: 'transactions', label: 'Transactions', Icon: ArrowLeftRight },
+  { id: 'budgets',      label: 'Budgets',      Icon: Wallet },
+  { id: 'insights',     label: 'Insights',     Icon: Sparkles, badge: 3 },
 ]
 
-interface SidebarProps {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface SidebarProps {
   activePage: string
   onNavigate: (page: string) => void
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 const Sidebar: FC<SidebarProps> = ({ activePage, onNavigate }) => {
   const { isDark, toggleTheme } = useTheme()
+  const { trackEvent } = useAnalytics()
+
+  const handleThemeToggle = () => {
+    toggleTheme()
+    trackEvent(ANALYTICS_EVENTS.THEME_TOGGLED, { to: isDark ? 'light' : 'dark' })
+  }
 
   return (
-    <aside style={s.sidebar}>
-      {/* Brand */}
-      <div style={s.brand}>
-        <div style={s.brandIcon}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#0058BE" />
-          </svg>
+    <aside style={s.sidebar} aria-label="Application sidebar">
+
+      {/* ── Logo ── */}
+      <div style={s.logoRow}>
+        <div style={s.logoIcon} aria-hidden="true">
+          <Zap size={16} color="#0058BE" strokeWidth={2.5} />
         </div>
         <div>
-          <div style={s.brandName}>Proton</div>
-          <div style={s.brandSub}>Finance</div>
+          <div style={s.logoName}>Proton Finance</div>
+          <div style={s.logoSub}>WEALTH CURATOR</div>
         </div>
       </div>
 
-      <div style={s.divider} />
+      <div style={s.divider} role="separator" />
 
-      {/* Section label */}
-      <div style={s.sectionLabel}>MENU</div>
-
-      {/* Nav */}
-      <nav style={s.nav}>
-        {navItems.map((item) => {
-          const isActive = activePage === item.id
+      {/* ── Nav ── */}
+      <nav aria-label="Main navigation" style={s.nav}>
+        {NAV_ITEMS.map(({ id, label, Icon, badge }) => {
+          const isActive = activePage === id
           return (
             <button
-              key={item.id}
-              id={`nav-${item.id}`}
-              style={{ ...s.navItem, ...(isActive ? s.navItemActive : {}) }}
-              onClick={() => onNavigate(item.id)}
+              key={id}
+              id={`nav-${id}`}
+              style={isActive ? { ...s.navItem, ...s.navItemActive } : s.navItem}
+              onClick={() => onNavigate(id)}
               aria-current={isActive ? 'page' : undefined}
+              aria-label={label}
             >
-              <span style={{ ...s.navIcon, ...(isActive ? s.navIconActive : {}) }}>
-                {item.icon}
+              <span style={isActive ? { ...s.navIcon, ...s.navIconActive } : s.navIcon}>
+                <Icon size={16} strokeWidth={1.75} />
               </span>
-              <span style={s.navLabel}>{item.label}</span>
-              {item.badge ? (
-                <span style={s.navBadge}>{item.badge}</span>
-              ) : null}
+              <span style={s.navLabel}>{label}</span>
+              {badge != null && (
+                <span style={s.navBadge} aria-label={`${badge} unread`}>{badge}</span>
+              )}
             </button>
           )
         })}
       </nav>
 
-      {/* Spacer */}
+      {/* ── Spacer ── */}
       <div style={{ flex: 1 }} />
 
-      {/* Theme toggle */}
-      <div style={s.sectionLabel}>APPEARANCE</div>
-      <button id="theme-toggle" style={s.themeToggle} onClick={toggleTheme}>
-        <span style={s.navIcon}>{isDark ? <IconSun /> : <IconMoon />}</span>
+      {/* ── Pro Access card ── */}
+      <div style={s.proCard}>
+        <div style={s.proCardInner}>
+          <Sparkles size={14} color="#fff" strokeWidth={2} style={{ marginBottom: 6 }} />
+          <div style={s.proTitle}>PRO ACCESS</div>
+          <div style={s.proBody}>Unlock AI Strategy Insights</div>
+          <button style={s.proBtn} aria-label="Upgrade to Proton Finance Premium">
+            Upgrade to Premium
+          </button>
+        </div>
+      </div>
+
+      {/* ── Bottom links ── */}
+      <div style={s.bottomLinks}>
+        <button style={s.bottomLink} aria-label="Help Center">
+          <HelpCircle size={15} strokeWidth={1.75} />
+          <span>Help Center</span>
+        </button>
+        <button style={s.bottomLink} aria-label="Log out">
+          <LogOut size={15} strokeWidth={1.75} />
+          <span>Logout</span>
+        </button>
+      </div>
+
+      <div style={s.divider} role="separator" />
+
+      {/* ── Theme toggle ── */}
+      <button
+        id="theme-toggle"
+        style={s.themeToggle}
+        onClick={handleThemeToggle}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {isDark
+          ? <Sun size={15} strokeWidth={1.75} />
+          : <Moon size={15} strokeWidth={1.75} />}
         <span style={s.navLabel}>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
       </button>
 
-      {/* User */}
-      <div style={s.divider} />
-      <div style={s.user}>
-        <div style={s.userAvatar}>JD</div>
-        <div>
-          <div style={s.userName}>James Donovan</div>
-          <div style={s.userRole}>Wealth Manager</div>
-        </div>
-      </div>
+      {/* ── Footer ── */}
+      <p style={s.footer}>
+        © 2026 Editorial Finance. All financial data is encrypted and secure.
+      </p>
     </aside>
   )
 }
 
 export default Sidebar
 
-/* ── Styles ── */
+// ─── Styles ──────────────────────────────────────────────────────────────────
+// Sidebar is ALWAYS dark — hardcoded colours, never inherit theme vars
+
+const SIDEBAR_BG    = '#0B0F1A'
+const SIDEBAR_BORDER = '#151D2B'
+const TEXT_PRIMARY  = '#FFFFFF'
+const TEXT_SECONDARY = '#8B92A5'
+const TEXT_TERTIARY = '#555E72'
+
 const s: Record<string, CSSProperties> = {
   sidebar: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: 'var(--sidebar-width)',
-    height: '100vh',
-    background: 'var(--color-bg-sidebar)',
-    borderRight: '1px solid var(--color-border-subtle)',
-    boxShadow: 'var(--shadow-sidebar)',
-    display: 'flex',
-    flexDirection: 'column',
-    padding: 'var(--space-5)',
-    gap: 'var(--space-2)',
-    zIndex: 100,
-    overflowY: 'auto',
+    position:        'fixed',
+    top:             0,
+    left:            0,
+    width:           'var(--sidebar-width)',
+    height:          '100vh',
+    background:      SIDEBAR_BG,
+    borderRight:     `1px solid ${SIDEBAR_BORDER}`,
+    boxShadow:       '4px 0 24px rgba(0,0,0,0.5)',
+    display:         'flex',
+    flexDirection:   'column',
+    padding:         '20px 12px 16px',
+    zIndex:          100,
+    overflowY:       'auto',
+    overflowX:       'hidden',
+    boxSizing:       'border-box',
   },
-  brand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-3)',
-    padding: 'var(--space-2) 0 var(--space-4)',
+
+  // Logo
+  logoRow: {
+    display:        'flex',
+    alignItems:     'center',
+    gap:            10,
+    padding:        '4px 4px 16px',
   },
-  brandIcon: {
-    width: '36px',
-    height: '36px',
-    borderRadius: 'var(--radius-md)',
-    background: 'rgba(0,88,190,0.15)',
-    display: 'flex',
-    alignItems: 'center',
+  logoIcon: {
+    width:          32,
+    height:         32,
+    borderRadius:   8,
+    background:     'rgba(0,88,190,0.15)',
+    border:         '1px solid rgba(0,88,190,0.3)',
+    display:        'flex',
+    alignItems:     'center',
     justifyContent: 'center',
-    border: '1px solid rgba(0,88,190,0.3)',
+    flexShrink:     0,
+  },
+  logoName: {
+    fontSize:       14,
+    fontFamily:     'var(--font-family)',
+    fontWeight:     700,
+    color:          TEXT_PRIMARY,
+    lineHeight:     1.2,
+    letterSpacing:  '-0.01em',
+  },
+  logoSub: {
+    fontSize:       9,
+    fontFamily:     'var(--font-family)',
+    fontWeight:     600,
+    color:          '#F5A623',
+    letterSpacing:  '0.12em',
+    textTransform:  'uppercase',
+    marginTop:      1,
+  },
+
+  divider: {
+    height:     1,
+    background: SIDEBAR_BORDER,
+    margin:     '8px 0',
     flexShrink: 0,
   },
-  brandName: {
-    font: 'var(--font-heading-md)',
-    fontFamily: 'var(--font-family)',
-    color: '#FFFFFF',
-    fontWeight: 700,
-    lineHeight: 1.2,
-  },
-  brandSub: {
-    font: 'var(--font-label-sm)',
-    fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-tertiary)',
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-  },
-  divider: {
-    height: '1px',
-    background: 'var(--color-border-subtle)',
-    margin: 'var(--space-2) 0',
-  },
-  sectionLabel: {
-    fontSize: '0.625rem',
-    fontFamily: 'var(--font-family)',
-    fontWeight: 600,
-    color: 'var(--color-text-tertiary)',
-    letterSpacing: '0.1em',
-    padding: 'var(--space-2) var(--space-2) var(--space-1)',
-  },
+
+  // Nav
   nav: {
-    display: 'flex',
+    display:       'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap:           2,
+    marginTop:     4,
   },
   navItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-3)',
-    padding: '10px var(--space-3)',
-    borderRadius: 'var(--radius-md)',
-    border: 'none',
-    background: 'transparent',
-    color: 'var(--color-text-secondary)',
-    cursor: 'pointer',
-    width: '100%',
-    textAlign: 'left',
-    transition: 'all 0.15s ease',
+    display:        'flex',
+    alignItems:     'center',
+    gap:            12,
+    height:         40,
+    padding:        '0 12px',
+    borderRadius:   8,
+    border:         'none',
+    borderLeft:     '3px solid transparent',
+    background:     'transparent',
+    color:          TEXT_SECONDARY,
+    cursor:         'pointer',
+    width:          '100%',
+    textAlign:      'left',
+    transition:     'background 0.12s ease, color 0.12s ease',
+    boxSizing:      'border-box',
+    flexShrink:     0,
   },
   navItemActive: {
-    background: 'rgba(0,88,190,0.15)',
-    color: '#FFFFFF',
-    borderLeft: '2px solid var(--color-primary)',
+    background:  'rgba(0,88,190,0.12)',
+    borderLeft:  '3px solid #0058BE',
+    color:       TEXT_PRIMARY,
+    borderRadius: '0 8px 8px 0',
   },
   navIcon: {
-    color: 'var(--color-text-tertiary)',
+    color:    TEXT_TERTIARY,
+    display:  'flex',
     flexShrink: 0,
-    display: 'flex',
   },
   navIconActive: {
-    color: 'var(--color-primary)',
+    color: '#0058BE',
   },
   navLabel: {
-    font: 'var(--font-body-md)',
+    fontSize:   13,
     fontFamily: 'var(--font-family)',
     fontWeight: 500,
-    flex: 1,
+    flex:       1,
   },
   navBadge: {
-    minWidth: '18px',
-    height: '18px',
-    borderRadius: '99px',
-    background: 'var(--color-error)',
-    color: '#fff',
-    fontSize: '10px',
-    fontWeight: 700,
-    display: 'flex',
-    alignItems: 'center',
+    minWidth:       18,
+    height:         18,
+    borderRadius:   99,
+    background:     '#D93025',
+    color:          '#fff',
+    fontSize:       10,
+    fontWeight:     700,
+    display:        'flex',
+    alignItems:     'center',
     justifyContent: 'center',
-    padding: '0 5px',
+    padding:        '0 5px',
+    flexShrink:     0,
   },
-  themeToggle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-3)',
-    padding: '10px var(--space-3)',
-    borderRadius: 'var(--radius-md)',
-    border: 'none',
-    background: 'transparent',
-    color: 'var(--color-text-secondary)',
-    cursor: 'pointer',
-    width: '100%',
-    textAlign: 'left',
-    transition: 'all 0.15s ease',
+
+  // Pro card
+  proCard: {
+    margin:  '8px 0 4px',
   },
-  user: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'var(--space-3)',
-    padding: 'var(--space-3) var(--space-2)',
-    marginTop: 'var(--space-2)',
+  proCardInner: {
+    background:   'linear-gradient(135deg, #0044A0 0%, #0058BE 60%, #1A7FE0 100%)',
+    borderRadius:  10,
+    padding:      '14px 14px 12px',
+    display:      'flex',
+    flexDirection:'column',
+    gap:          4,
   },
-  userAvatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    background: 'var(--color-primary)',
-    color: '#fff',
-    fontSize: '11px',
-    fontWeight: 700,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    letterSpacing: '0.05em',
+  proTitle: {
+    fontSize:      9,
+    fontFamily:   'var(--font-family)',
+    fontWeight:    700,
+    color:        'rgba(255,255,255,0.65)',
+    letterSpacing:'0.12em',
+    textTransform:'uppercase',
   },
-  userName: {
-    font: 'var(--font-body-md)',
+  proBody: {
+    fontSize:   12,
     fontFamily: 'var(--font-family)',
     fontWeight: 600,
-    color: 'var(--color-text-primary)',
+    color:      '#FFFFFF',
     lineHeight: 1.3,
+    margin:     '2px 0 8px',
   },
-  userRole: {
-    font: 'var(--font-label-sm)',
+  proBtn: {
+    padding:      '6px 10px',
+    border:       '1px solid rgba(255,255,255,0.35)',
+    borderRadius:  6,
+    background:   'transparent',
+    color:        '#FFFFFF',
+    fontSize:      11,
+    fontFamily:   'var(--font-family)',
+    fontWeight:    600,
+    cursor:       'pointer',
+    transition:   'background 0.12s ease',
+    alignSelf:    'flex-start',
+  },
+
+  // Bottom links
+  bottomLinks: {
+    display:       'flex',
+    flexDirection: 'column',
+    gap:           2,
+    marginTop:     4,
+  },
+  bottomLink: {
+    display:    'flex',
+    alignItems: 'center',
+    gap:         10,
+    height:      36,
+    padding:    '0 12px',
+    borderRadius: 8,
+    border:     'none',
+    background: 'transparent',
+    color:      TEXT_TERTIARY,
+    fontSize:    13,
     fontFamily: 'var(--font-family)',
-    color: 'var(--color-text-tertiary)',
+    fontWeight:  500,
+    cursor:     'pointer',
+    width:      '100%',
+    textAlign:  'left',
+    transition: 'color 0.12s ease, background 0.12s ease',
+    boxSizing:  'border-box',
+  },
+
+  // Theme toggle
+  themeToggle: {
+    display:    'flex',
+    alignItems: 'center',
+    gap:         10,
+    height:      36,
+    padding:    '0 12px',
+    borderRadius: 8,
+    border:     'none',
+    background: 'transparent',
+    color:      TEXT_SECONDARY,
+    cursor:     'pointer',
+    width:      '100%',
+    textAlign:  'left',
+    transition: 'color 0.12s ease',
+    boxSizing:  'border-box',
+  },
+
+  // Footer
+  footer: {
+    fontSize:   10,
+    fontFamily: 'var(--font-family)',
+    color:      TEXT_TERTIARY,
+    lineHeight: 1.4,
+    padding:   '10px 4px 0',
   },
 }
-
-export type { SidebarProps }
