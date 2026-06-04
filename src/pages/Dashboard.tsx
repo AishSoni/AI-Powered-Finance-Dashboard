@@ -4,11 +4,12 @@ import MetricRow from '@/components/Cards/MetricRow'
 import { ProStrategyCard } from '@/components/AIInsights/ProStrategyCard'
 import { InsightCard } from '@/components/AIInsights/InsightCard'
 import { ActiveAlertsPreview } from '@/components/Cards/ActiveAlertsPreview'
-import TransactionList from '@/components/Transactions/TransactionList'
 import BudgetTracker from '@/components/Budget/BudgetTracker'
+import { SpendingComposition } from '@/components/Spending/SpendingComposition'
+import RecentActivity from '@/components/Transactions/RecentActivity'
 import {
-  aiInsights, mockTransactions, budgetCategories,
-  portfolioAllocation, activeAlerts,
+  aiInsights, budgetCategories, portfolioAllocation,
+  activeAlerts, spendingCategories,
 } from '@/data/mockData'
 
 // ─── Portfolio donut ──────────────────────────────────────────────────────────
@@ -102,8 +103,14 @@ const Dashboard: FC = () => {
         </div>
       </div>
 
-      {/* ── Row 4: Transactions ── */}
-      <TransactionList transactions={mockTransactions} />
+      <div style={s.row4}>
+        <div style={s.spendingCol}>
+          <SpendingComposition categories={spendingCategories} />
+        </div>
+        <div style={s.activityCol}>
+          <RecentActivity />
+        </div>
+      </div>
     </div>
   )
 }
@@ -140,6 +147,15 @@ const s: Record<string, CSSProperties> = {
   col3A: {},
   col3B: { display: 'flex', flexDirection: 'column', gap: 12 },
   col3C: {},
+
+  row4: {
+    display:             'grid',
+    gridTemplateColumns: '1fr 1.6fr',
+    gap:                  16,
+    alignItems:          'start',
+  },
+  spendingCol: {},
+  activityCol: {},
 
   sectionTitle: {
     fontSize:   14,

@@ -1,6 +1,7 @@
 import type { Transaction } from '@/components/Transactions/TransactionList'
 import type { BudgetCategory } from '@/components/Budget/BudgetTracker'
 import type { Alert } from '@/components/Cards/ActiveAlertsPreview'
+import type { SpendingCategory } from '@/components/Spending/SpendingComposition'
 
 // ── Dashboard summary (fetched by MetricRow) ──────────────────────────────────
 
@@ -121,3 +122,13 @@ export const portfolioAllocation = [
   { name: 'Real Estate',   pct: 10, value: '$124,850', color: '#8B5CF6' },
   { name: 'Cash',          pct: 8,  value: '$99,880',  color: '#555E72' },
 ]
+
+// ── Spending composition ───────────────────────────────────────────────────────
+export const spendingCategories: SpendingCategory[] = [
+  { label: 'Housing',      pct: 52, color: 'var(--color-primary)',  amount: 2400 },
+  { label: 'Food & Dining',pct: 18, color: '#F5A623',               amount: 780  },
+  { label: 'Investments',  pct: 16, color: 'var(--color-success)',  amount: 680  },
+  { label: 'Transport',    pct: 8,  color: '#8B5CF6',               amount: 320  },
+  { label: 'Utilities',    pct: 6,  color: '#555E72',               amount: 145  },
+]
+
