@@ -1,6 +1,6 @@
 import { memo, useCallback, type CSSProperties } from 'react'
 import { AlertTriangle, Info, TrendingDown, X } from 'lucide-react'
-import { useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
+import { useAnalytics } from '@/hooks'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,15 +30,12 @@ interface AlertItemProps {
 }
 
 const AlertItem = memo(function AlertItem({ alert, compact }: AlertItemProps) {
-  const { trackEvent } = useAnalytics()
+  const { trackAlertDismiss } = useAnalytics()
   const { Icon, color, bg } = ICON_MAP[alert.severity]
 
   const handleDismiss = useCallback(() => {
-    trackEvent(ANALYTICS_EVENTS.ALERT_DISMISSED, {
-      severity: alert.severity,
-      id: alert.id,
-    })
-  }, [alert.id, alert.severity, trackEvent])
+    trackAlertDismiss(alert.id, alert.severity)
+  }, [alert.id, alert.severity, trackAlertDismiss])
 
   return (
     <div style={s.item}>

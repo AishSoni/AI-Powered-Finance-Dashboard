@@ -14,13 +14,20 @@
     <meta property="og:description" content="AI-powered personal finance. Track net worth, spending, and execute AI-driven investment strategies." />
     <meta property="og:type"        content="website" />
 
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <!-- Google Analytics 4
+         VITE_GA_MEASUREMENT_ID is substituted at build time by Vite.
+         If the env var is absent the script src resolves to an invalid URL
+         and is silently skipped; all gtagEvent calls no-op via the guard
+         in src/utils/analytics.ts.                                         -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"></script>
     <script>
-      window.dataLayer=window.dataLayer||[];
-      function gtag(){dataLayer.push(arguments)}
-      gtag('js',new Date());
-      gtag('config','G-XXXXXXXXXX',{page_title:'Proton Finance Dashboard'});
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments) }
+      gtag('js', new Date());
+      // Only configure if the real gtag script loaded (not blocked by adblocker)
+      if (typeof window.gtag === 'function') {
+        gtag('config', '%VITE_GA_MEASUREMENT_ID%', { page_title: 'Proton Finance Dashboard' });
+      }
     </script>
 
     <!-- Inter typeface -->

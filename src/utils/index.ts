@@ -6,6 +6,9 @@
 // - dateUtils.ts
 
 export { initGA, gtagEvent } from './analytics'
+export { generateInsights } from './insightsEngine'
+export type { ProStrategyInsight, InsightSeverity } from './insightsEngine'
+
 
 /**
  * Format a number as USD currency string.

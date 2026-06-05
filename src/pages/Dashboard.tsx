@@ -8,9 +8,11 @@ import BudgetTracker from '@/components/Budget/BudgetTracker'
 import { SpendingComposition } from '@/components/Spending/SpendingComposition'
 import RecentActivity from '@/components/Transactions/RecentActivity'
 import {
-  aiInsights, budgetCategories, portfolioAllocation,
+  budgetCategories, portfolioAllocation,
   activeAlerts, spendingCategories,
+  mockTransactions, budgetPageData,
 } from '@/data/mockData'
+import { generateInsights } from '@/utils/insightsEngine'
 import './Dashboard.css'
 
 // ─── Portfolio donut ──────────────────────────────────────────────────────────
@@ -57,6 +59,12 @@ const PortfolioDonut: FC = () => {
 // ─── Dashboard page ───────────────────────────────────────────────────────────
 
 const Dashboard: FC = () => {
+  // Dynamic AI insights — recomputed when transactions/budget change
+  const insights = useMemo(
+    () => generateInsights(mockTransactions, budgetPageData),
+    [],
+  )
+
   return (
     <div className="dashboard-page" style={s.page}>
 
@@ -99,7 +107,7 @@ const Dashboard: FC = () => {
         <div className="dashboard-col3b" style={s.col3B}>
           <div style={s.sectionTitle}>AI Insights</div>
           <div style={s.insightsList}>
-            {aiInsights.map((insight) => (
+            {insights.map((insight) => (
               <InsightCard key={insight.id} {...insight} />
             ))}
           </div>

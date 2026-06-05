@@ -175,7 +175,7 @@ const TransactionRow = memo(function TransactionRow({ tx }: { tx: Transaction })
 
 export default function RecentActivity() {
   const { data, loading } = useFetch<Transaction[]>(fetchTransactions)
-  const { trackEvent }    = useAnalytics()
+  const { trackEvent, trackCSVExport } = useAnalytics()
 
   const [activeFilter, setActiveFilter] = useLocalStorage<FilterKey>('tx-filter', 'All')
   const [hovered, setHovered]           = useState<string | null>(null)
@@ -199,9 +199,10 @@ export default function RecentActivity() {
   }, [setActiveFilter, trackEvent])
 
   const handleExport = useCallback(() => {
-    trackEvent(ANALYTICS_EVENTS.EXPORT_CSV_CLICKED)
-    exportToCSV(filtered.length > 0 ? filtered : (data ?? []), 'proton-transactions')
-  }, [data, filtered, trackEvent])
+    const rows = filtered.length > 0 ? filtered : (data ?? [])
+    trackCSVExport(rows.length)
+    exportToCSV(rows, 'proton-transactions')
+  }, [data, filtered, trackCSVExport])
 
   const handleFilterPanelClick = useCallback(() => {
     trackEvent(ANALYTICS_EVENTS.TRANSACTION_FILTERED, { page: 'transactions' })

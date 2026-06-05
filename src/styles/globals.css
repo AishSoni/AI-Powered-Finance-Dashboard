@@ -64,6 +64,34 @@
     border-radius: var(--radius-sm);
   }
 
+  /* ── Universal theme-switch transitions ──
+     Smooth colour changes on every element when data-theme flips.
+     Transforms and opacity are intentionally excluded so animations
+     (hovers, skeleton shimmer, chart entrances) remain snappy.         */
+  *,
+  *::before,
+  *::after {
+    transition:
+      background-color 0.2s ease,
+      border-color     0.2s ease,
+      color            0.1s ease;
+  }
+
+  /* Remove the universal transition from elements that animate via
+     transform or opacity — avoids fighting with component-level transitions */
+  .btn-primary,
+  .btn-ghost,
+  .btn-primary:hover,
+  .btn-ghost:hover {
+    transition:
+      background-color 0.12s ease,
+      border-color     0.12s ease,
+      color            0.1s  ease,
+      box-shadow       0.12s ease,
+      transform        0.12s ease,
+      opacity          0.12s ease;
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar       { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
