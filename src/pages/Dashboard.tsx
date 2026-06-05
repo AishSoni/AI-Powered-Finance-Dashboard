@@ -1,4 +1,4 @@
-import type { CSSProperties, FC } from 'react'
+import { useMemo, type CSSProperties, type FC } from 'react'
 import PageHeader from '@/components/Header/PageHeader'
 import MetricRow from '@/components/Cards/MetricRow'
 import { ProStrategyCard } from '@/components/AIInsights/ProStrategyCard'
@@ -16,12 +16,15 @@ import './Dashboard.css'
 // ─── Portfolio donut ──────────────────────────────────────────────────────────
 
 const PortfolioDonut: FC = () => {
-  let cursor = 0
-  const stops = portfolioAllocation.map((slice) => {
-    const from = cursor
-    cursor += slice.pct
-    return `${slice.color} ${from}% ${cursor}%`
-  })
+  const stops = useMemo(() => (
+    portfolioAllocation.reduce<{ cursor: number; stops: string[] }>((acc, slice) => {
+      const nextCursor = acc.cursor + slice.pct
+      return {
+        cursor: nextCursor,
+        stops: [...acc.stops, `${slice.color} ${acc.cursor}% ${nextCursor}%`],
+      }
+    }, { cursor: 0, stops: [] }).stops
+  ), [])
 
   return (
     <div className="card" style={s.donutCard}>

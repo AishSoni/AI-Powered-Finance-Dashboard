@@ -1,4 +1,4 @@
-import type { CSSProperties, FC } from 'react'
+import { memo, type CSSProperties, type FC } from 'react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,7 +11,8 @@ interface InsightCardProps {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export const InsightCard: FC<InsightCardProps> = ({ tag, title, body }) => (
+export const InsightCard: FC<InsightCardProps> = memo(function InsightCard({ tag, title, body }) {
+  return (
   <div style={s.card}>
     <div style={s.header}>
       <span style={s.dot} aria-hidden="true" />
@@ -20,7 +21,8 @@ export const InsightCard: FC<InsightCardProps> = ({ tag, title, body }) => (
     <div style={s.title}>{title}</div>
     <div style={s.body}>{body}</div>
   </div>
-)
+  )
+})
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 

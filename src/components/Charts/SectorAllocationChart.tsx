@@ -1,7 +1,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import { type CSSProperties } from 'react'
 
-interface SectorAllocationChartProps {
+export interface SectorAllocationChartProps {
   data?: Array<{ name: string; value: number; color: string }>
 }
 

@@ -1,5 +1,5 @@
-import { useEffect, useState, type CSSProperties } from 'react'
-import { useFetch } from '@/hooks/useFetch'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { ANALYTICS_EVENTS, useAnalytics, useFetch } from '@/hooks'
 import { fetchBudget, budgetPageData } from '@/data/mockData'
 import { CategoryBudgetCard } from '@/components/Budget/CategoryBudgetCard'
 import { BudgetStrategyCard } from '@/components/AIInsights/BudgetStrategyCard'
@@ -10,10 +10,20 @@ import { activeAlerts } from '@/data/mockData'
 
 const BudgetPage = () => {
   const { data, loading } = useFetch(fetchBudget, [])
+  const { trackEvent } = useAnalytics()
   const [progressWidth, setProgressWidth] = useState(0)
 
   const budgetData = data || budgetPageData
-  const velocityPercentage = Math.round((budgetData.totalSpent / budgetData.totalLimit) * 100)
+  const velocityPercentage = useMemo(
+    () => Math.round((budgetData.totalSpent / budgetData.totalLimit) * 100),
+    [budgetData.totalLimit, budgetData.totalSpent],
+  )
+
+  const categories = useMemo(() => budgetData.categories, [budgetData.categories])
+
+  const handleAdjustLimits = useCallback(() => {
+    trackEvent(ANALYTICS_EVENTS.BUDGET_LIMIT_ADJUSTED)
+  }, [trackEvent])
 
   // Animate velocity progress bar on mount
   useEffect(() => {
@@ -31,7 +41,7 @@ const BudgetPage = () => {
           <h1 style={s.title}>Monthly Overview</h1>
           <p style={s.subtitle}>Fiscal Period: {budgetData.fiscalPeriod}</p>
         </div>
-        <button style={s.adjustButton}>Adjust Limits</button>
+        <button style={s.adjustButton} onClick={handleAdjustLimits}>Adjust Limits</button>
       </div>
 
       {/* ── Main Content: 2-column layout ── */}
@@ -49,7 +59,14 @@ const BudgetPage = () => {
             </div>
             
             {/* Progress bar */}
-            <div style={s.velocityTrack}>
+            <div
+              style={s.velocityTrack}
+              role="progressbar"
+              aria-valuenow={velocityPercentage}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Total budget velocity progress"
+            >
               <div
                 style={{
                   ...s.velocityFill,
@@ -85,7 +102,7 @@ const BudgetPage = () => {
               <a href="#" style={s.viewAllLink}>View All Categories</a>
             </div>
             <div style={s.categoryGrid}>
-              {budgetData.categories.map((cat) => (
+              {categories.map((cat) => (
                 <CategoryBudgetCard
                   key={cat.category}
                   category={cat.category}

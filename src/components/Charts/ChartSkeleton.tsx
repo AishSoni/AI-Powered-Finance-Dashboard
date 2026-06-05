@@ -6,7 +6,7 @@ interface ChartSkeletonProps {
 
 export const ChartSkeleton = ({ height = 200 }: ChartSkeletonProps) => {
   return (
-    <div style={{ ...s.skeleton, height }} aria-hidden="true">
+    <div style={{ ...s.skeleton, height }} role="status" aria-label="Loading financial data">
       <div style={s.shimmer} />
     </div>
   )

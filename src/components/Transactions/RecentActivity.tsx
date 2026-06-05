@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, type CSSProperties } from 'react'
+import { memo, useCallback, useMemo, useState, type CSSProperties } from 'react'
 import { Filter, Download, Receipt } from 'lucide-react'
 import { useFetch, useLocalStorage, useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
 import { exportToCSV } from '@/utils/exportCSV'
@@ -92,6 +92,34 @@ function RowSkeleton() {
   )
 }
 
+interface FilterPillButtonProps {
+  pill: FilterKey
+  isActive: boolean
+  onSelect: (pill: FilterKey) => void
+}
+
+const FilterPillButton = memo(function FilterPillButton({
+  pill,
+  isActive,
+  onSelect,
+}: FilterPillButtonProps) {
+  const handleClick = useCallback(() => {
+    onSelect(pill)
+  }, [onSelect, pill])
+
+  return (
+    <button
+      id={`filter-${pill.toLowerCase()}`}
+      style={isActive ? { ...s.pill, ...s.pillActive } : s.pill}
+      onClick={handleClick}
+      role="radio"
+      aria-checked={isActive}
+    >
+      {pill}
+    </button>
+  )
+})
+
 // ─── Transaction row (memoised) ───────────────────────────────────────────────
 
 const TransactionRow = memo(function TransactionRow({ tx }: { tx: Transaction }) {
@@ -126,8 +154,13 @@ const TransactionRow = memo(function TransactionRow({ tx }: { tx: Transaction })
 
       {/* Status dot + label */}
       <div style={s.statusCell}>
-        <span style={{ ...s.statusDot, background: status.color }} />
-        <span style={{ ...s.statusText, color: status.color }}>{status.label}</span>
+        <span style={{ ...s.statusDot, background: status.color }} aria-hidden="true" />
+        <span
+          style={{ ...s.statusText, color: status.color }}
+          aria-label={`Status: ${status.label.charAt(0)}${status.label.slice(1).toLowerCase()}`}
+        >
+          {status.label}
+        </span>
       </div>
 
       {/* Amount */}
@@ -157,18 +190,30 @@ export default function RecentActivity() {
     )
   }, [data, activeFilter])
 
-  const handleFilter = (pill: FilterKey) => {
+  const handleFilter = useCallback((pill: FilterKey) => {
     setActiveFilter(pill)
     trackEvent(ANALYTICS_EVENTS.FILTER_CLICKED, {
-      filter_name:  'tx-category',
-      filter_value: pill,
+      category: pill,
+      page: 'transactions',
     })
-  }
+  }, [setActiveFilter, trackEvent])
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     trackEvent(ANALYTICS_EVENTS.EXPORT_CSV_CLICKED)
     exportToCSV(filtered.length > 0 ? filtered : (data ?? []), 'proton-transactions')
-  }
+  }, [data, filtered, trackEvent])
+
+  const handleFilterPanelClick = useCallback(() => {
+    trackEvent(ANALYTICS_EVENTS.TRANSACTION_FILTERED, { page: 'transactions' })
+  }, [trackEvent])
+
+  const handleMouseEnter = useCallback((id: string) => {
+    setHovered(id)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setHovered(null)
+  }, [])
 
   return (
     <section style={s.card} aria-label="Recent Activity">
@@ -183,11 +228,11 @@ export default function RecentActivity() {
             onClick={handleExport}
             aria-label="Export transactions to CSV"
           >
-            <Download size={14} strokeWidth={2} />
+            <Download size={14} strokeWidth={2} aria-hidden="true" />
             <span>Export CSV</span>
           </button>
-          <button style={s.actionBtn} aria-label="Open filter options">
-            <Filter size={14} strokeWidth={2} />
+          <button style={s.actionBtn} onClick={handleFilterPanelClick} aria-label="Open filter options">
+            <Filter size={14} strokeWidth={2} aria-hidden="true" />
             <span>Filter</span>
           </button>
         </div>
@@ -198,15 +243,12 @@ export default function RecentActivity() {
         {FILTER_PILLS.map((pill) => {
           const isActive = pill === activeFilter
           return (
-            <button
+            <FilterPillButton
               key={pill}
-              id={`filter-${pill.toLowerCase()}`}
-              style={isActive ? { ...s.pill, ...s.pillActive } : s.pill}
-              onClick={() => handleFilter(pill)}
-              aria-pressed={isActive}
-            >
-              {pill}
-            </button>
+              pill={pill}
+              isActive={isActive}
+              onSelect={handleFilter}
+            />
           )
         })}
       </div>
@@ -221,12 +263,16 @@ export default function RecentActivity() {
       {/* ── Rows ── */}
       <div role="rowgroup">
         {/* Skeletons */}
-        {loading && [0, 1, 2, 3].map((i) => <RowSkeleton key={i} />)}
+        {loading && (
+          <div role="status" aria-label="Loading financial data">
+            {[0, 1, 2, 3].map((i) => <RowSkeleton key={i} />)}
+          </div>
+        )}
 
         {/* Empty state */}
         {!loading && filtered.length === 0 && (
           <div style={s.empty} aria-live="polite">
-            <Receipt size={28} color="var(--color-text-tertiary)" strokeWidth={1.5} />
+            <Receipt size={28} color="var(--color-text-tertiary)" strokeWidth={1.5} aria-hidden="true" />
             <span style={s.emptyText}>No transactions found</span>
             <span style={s.emptyHint}>
               Try a different filter or check back later
@@ -239,8 +285,8 @@ export default function RecentActivity() {
           <div
             key={tx.id}
             style={hovered === tx.id ? { ...s.rowWrap, background: 'var(--color-bg-elevated)' } : s.rowWrap}
-            onMouseEnter={() => setHovered(tx.id)}
-            onMouseLeave={() => setHovered(null)}
+            onMouseEnter={() => handleMouseEnter(tx.id)}
+            onMouseLeave={handleMouseLeave}
           >
             <TransactionRow tx={tx} />
           </div>

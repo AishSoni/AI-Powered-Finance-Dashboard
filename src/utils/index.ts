@@ -5,6 +5,8 @@
 // - cn.ts (classnames helper)
 // - dateUtils.ts
 
+export { initGA, gtagEvent } from './analytics'
+
 /**
  * Format a number as USD currency string.
  * @example formatCurrency(4820000) → "$4,820,000.00"

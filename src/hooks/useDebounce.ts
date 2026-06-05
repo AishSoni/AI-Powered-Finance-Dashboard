@@ -34,8 +34,7 @@ export function useDebounce<T>(value: T, delay: number = 300): T {
 
 // Allow any function signature — intentional use of `any` here is unavoidable
 // for a generic callback debouncer. eslint-disable keeps it explicit.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyFn = (...args: any[]) => any
+type AnyFn = (...args: never[]) => unknown
 
 /**
  * Returns a stable, debounced version of `fn` that fires only after `delay` ms
@@ -59,7 +58,9 @@ export function useDebouncedCallback<T extends AnyFn>(
 ): (...args: Parameters<T>) => void {
   // Keep fn in a ref so callers don't need to memoize it themselves
   const fnRef = useRef<T>(fn)
-  fnRef.current = fn
+  useEffect(() => {
+    fnRef.current = fn
+  }, [fn])
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 

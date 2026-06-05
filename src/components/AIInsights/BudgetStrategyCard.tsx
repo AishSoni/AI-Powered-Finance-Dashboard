@@ -1,4 +1,4 @@
-import { memo, type CSSProperties } from 'react'
+import { memo, useCallback, type CSSProperties } from 'react'
 import { useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -22,13 +22,13 @@ export const BudgetStrategyCard = memo(function BudgetStrategyCard({
 }: BudgetStrategyCardProps) {
   const { trackEvent } = useAnalytics()
 
-  const handleApply = () => {
+  const handleApply = useCallback(() => {
     trackEvent(ANALYTICS_EVENTS.STRATEGY_EXECUTED, {
       cta_label:  'Apply Strategy',
       insight_id: insightId,
-      context:    'budget',
+      type:       'budget',
     })
-  }
+  }, [insightId, trackEvent])
 
   return (
     <article style={s.card} aria-label="Budget Strategy Insight">

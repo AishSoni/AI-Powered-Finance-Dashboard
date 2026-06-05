@@ -1,11 +1,12 @@
 import type { CSSProperties, FC } from 'react'
 import React from 'react'
+import { memo, useCallback } from 'react'
 import {
   LayoutDashboard, Building2, ArrowLeftRight,
   Wallet, Sparkles, HelpCircle, LogOut,
   Sun, Moon, Zap,
 } from 'lucide-react'
-import { useTheme } from '@/context/ThemeContext'
+import { useTheme } from '@/context/theme'
 import { useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
 
 // ─── Nav definition ───────────────────────────────────────────────────────────
@@ -32,16 +33,53 @@ export interface SidebarProps {
   onNavigate: (page: string) => void
 }
 
+interface NavItemButtonProps extends NavItem {
+  isActive: boolean
+  onNavigate: (page: string) => void
+}
+
+const NavItemButton = memo(function NavItemButton({
+  id,
+  label,
+  Icon,
+  badge,
+  isActive,
+  onNavigate,
+}: NavItemButtonProps) {
+  const handleClick = useCallback(() => {
+    onNavigate(id)
+  }, [id, onNavigate])
+
+  return (
+    <button
+      id={`nav-${id}`}
+      style={isActive ? { ...s.navItem, ...s.navItemActive } : s.navItem}
+      onClick={handleClick}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={label}
+    >
+      <span style={isActive ? { ...s.navIcon, ...s.navIconActive } : s.navIcon} aria-hidden="true">
+        <Icon size={16} strokeWidth={1.75} />
+      </span>
+      <span style={s.navLabel}>{label}</span>
+      {badge != null && (
+        <span style={s.navBadge} aria-label={`${badge} unread`}>{badge}</span>
+      )}
+    </button>
+  )
+})
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const Sidebar: FC<SidebarProps> = ({ activePage, onNavigate }) => {
   const { isDark, toggleTheme } = useTheme()
   const { trackEvent } = useAnalytics()
 
-  const handleThemeToggle = () => {
+  const handleThemeToggle = useCallback(() => {
+    const newTheme = isDark ? 'light' : 'dark'
     toggleTheme()
-    trackEvent(ANALYTICS_EVENTS.THEME_TOGGLED, { to: isDark ? 'light' : 'dark' })
-  }
+    trackEvent(ANALYTICS_EVENTS.THEME_TOGGLED, { newTheme })
+  }, [isDark, toggleTheme, trackEvent])
 
   return (
     <aside style={s.sidebar} aria-label="Application sidebar">
@@ -61,27 +99,14 @@ const Sidebar: FC<SidebarProps> = ({ activePage, onNavigate }) => {
 
       {/* ── Nav ── */}
       <nav aria-label="Main navigation" style={s.nav}>
-        {NAV_ITEMS.map(({ id, label, Icon, badge }) => {
-          const isActive = activePage === id
-          return (
-            <button
-              key={id}
-              id={`nav-${id}`}
-              style={isActive ? { ...s.navItem, ...s.navItemActive } : s.navItem}
-              onClick={() => onNavigate(id)}
-              aria-current={isActive ? 'page' : undefined}
-              aria-label={label}
-            >
-              <span style={isActive ? { ...s.navIcon, ...s.navIconActive } : s.navIcon}>
-                <Icon size={16} strokeWidth={1.75} />
-              </span>
-              <span style={s.navLabel}>{label}</span>
-              {badge != null && (
-                <span style={s.navBadge} aria-label={`${badge} unread`}>{badge}</span>
-              )}
-            </button>
-          )
-        })}
+        {NAV_ITEMS.map((item) => (
+          <NavItemButton
+            key={item.id}
+            {...item}
+            isActive={activePage === item.id}
+            onNavigate={onNavigate}
+          />
+        ))}
       </nav>
 
       {/* ── Spacer ── */}
@@ -90,7 +115,7 @@ const Sidebar: FC<SidebarProps> = ({ activePage, onNavigate }) => {
       {/* ── Pro Access card ── */}
       <div style={s.proCard}>
         <div style={s.proCardInner}>
-          <Sparkles size={14} color="#fff" strokeWidth={2} style={{ marginBottom: 6 }} />
+          <Sparkles size={14} color="#fff" strokeWidth={2} style={{ marginBottom: 6 }} aria-hidden="true" />
           <div style={s.proTitle}>PRO ACCESS</div>
           <div style={s.proBody}>Unlock AI Strategy Insights</div>
           <button style={s.proBtn} aria-label="Upgrade to Proton Finance Premium">
@@ -102,11 +127,11 @@ const Sidebar: FC<SidebarProps> = ({ activePage, onNavigate }) => {
       {/* ── Bottom links ── */}
       <div style={s.bottomLinks}>
         <button style={s.bottomLink} aria-label="Help Center">
-          <HelpCircle size={15} strokeWidth={1.75} />
+          <HelpCircle size={15} strokeWidth={1.75} aria-hidden="true" />
           <span>Help Center</span>
         </button>
         <button style={s.bottomLink} aria-label="Log out">
-          <LogOut size={15} strokeWidth={1.75} />
+          <LogOut size={15} strokeWidth={1.75} aria-hidden="true" />
           <span>Logout</span>
         </button>
       </div>
@@ -121,8 +146,8 @@ const Sidebar: FC<SidebarProps> = ({ activePage, onNavigate }) => {
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {isDark
-          ? <Sun size={15} strokeWidth={1.75} />
-          : <Moon size={15} strokeWidth={1.75} />}
+          ? <Sun size={15} strokeWidth={1.75} aria-hidden="true" />
+          : <Moon size={15} strokeWidth={1.75} aria-hidden="true" />}
         <span style={s.navLabel}>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
       </button>
 

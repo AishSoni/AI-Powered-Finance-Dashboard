@@ -1,7 +1,7 @@
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
 import { type CSSProperties } from 'react'
 
-interface PortfolioSparklineProps {
+export interface PortfolioSparklineProps {
   data?: Array<{ value: number }>
   height?: number
 }

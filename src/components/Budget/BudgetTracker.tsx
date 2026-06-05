@@ -1,4 +1,4 @@
-import type { CSSProperties, FC } from 'react'
+import { useMemo, type CSSProperties, type FC } from 'react'
 
 export interface BudgetCategory {
   name: string
@@ -13,6 +13,14 @@ interface BudgetTrackerProps {
 }
 
 const BudgetTracker: FC<BudgetTrackerProps> = ({ categories, title = 'Budget Overview' }) => {
+  const budgetItems = useMemo(() => (
+    categories.map((cat) => {
+      const pct = Math.min((cat.spent / cat.limit) * 100, 100)
+      const isOver = cat.spent > cat.limit
+      return { ...cat, pct, isOver }
+    })
+  ), [categories])
+
   return (
     <div className="card" style={s.wrapper}>
       <div style={s.header}>
@@ -21,40 +29,45 @@ const BudgetTracker: FC<BudgetTrackerProps> = ({ categories, title = 'Budget Ove
       </div>
 
       <div style={s.list}>
-        {categories.map((cat) => {
-          const pct = Math.min((cat.spent / cat.limit) * 100, 100)
-          const isOver = cat.spent > cat.limit
+        {budgetItems.map((cat) => {
           return (
             <div key={cat.name} style={s.item}>
               <div style={s.itemHeader}>
                 <span style={s.catName}>{cat.name}</span>
                 <span style={s.amounts}>
-                  <span style={{ color: isOver ? 'var(--color-error)' : 'var(--color-text-primary)', fontWeight: 600 }}>
+                  <span style={{ color: cat.isOver ? 'var(--color-error)' : 'var(--color-text-primary)', fontWeight: 600 }}>
                     ${cat.spent.toLocaleString()}
                   </span>
                   <span style={s.limit}> / ${cat.limit.toLocaleString()}</span>
                 </span>
               </div>
               {/* Progress bar */}
-              <div style={s.track}>
+              <div
+                style={s.track}
+                role="progressbar"
+                aria-valuenow={Math.round(cat.pct)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`${cat.name} budget progress`}
+              >
                 <div
                   style={{
                     ...s.fill,
-                    width: `${pct}%`,
-                    background: isOver
+                    width: `${cat.pct}%`,
+                    background: cat.isOver
                       ? 'var(--color-error)'
-                      : pct > 80
+                      : cat.pct > 80
                       ? 'var(--color-warning-light)'
                       : cat.color,
                   }}
                 />
               </div>
               <div style={s.itemFooter}>
-                <span style={{ color: isOver ? 'var(--color-error)' : 'var(--color-text-tertiary)', ...s.footerText }}>
-                  {isOver ? `${(cat.spent - cat.limit).toLocaleString()} over budget` : `${(cat.limit - cat.spent).toLocaleString()} remaining`}
+                <span style={{ color: cat.isOver ? 'var(--color-error)' : 'var(--color-text-tertiary)', ...s.footerText }}>
+                  {cat.isOver ? `${(cat.spent - cat.limit).toLocaleString()} over budget` : `${(cat.limit - cat.spent).toLocaleString()} remaining`}
                 </span>
-                <span style={{ ...s.footerText, color: isOver ? 'var(--color-error)' : 'var(--color-text-tertiary)' }}>
-                  {pct.toFixed(0)}%
+                <span style={{ ...s.footerText, color: cat.isOver ? 'var(--color-error)' : 'var(--color-text-tertiary)' }}>
+                  {cat.pct.toFixed(0)}%
                 </span>
               </div>
             </div>

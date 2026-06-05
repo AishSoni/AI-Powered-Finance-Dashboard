@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, type CSSProperties } from 'react'
+import { memo, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,8 +70,18 @@ export const SpendingComposition = memo(function SpendingComposition({
   title    = 'Spending Composition',
   onViewAll,
 }: SpendingCompositionProps) {
-  const highest = [...categories].sort((a, b) => b.pct - a.pct)[0]
-  const avgMonthly = categories.reduce((sum, c) => sum + c.amount, 0) / categories.length
+  const { highest, avgMonthly } = useMemo(() => {
+    const total = categories.reduce((sum, category) => sum + category.amount, 0)
+    const highestCategory = categories.reduce<SpendingCategory | undefined>(
+      (max, category) => (!max || category.pct > max.pct ? category : max),
+      undefined,
+    )
+
+    return {
+      highest: highestCategory,
+      avgMonthly: categories.length > 0 ? total / categories.length : 0,
+    }
+  }, [categories])
 
   const fmtAvg = new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD', maximumFractionDigits: 2,

@@ -1,4 +1,4 @@
-import type { CSSProperties, FC } from 'react'
+import { memo, type CSSProperties, type FC } from 'react'
 
 // ── Mock transaction data ──────────────────────────────────────────────────────
 export interface Transaction {
@@ -22,6 +22,31 @@ const statusColor: Record<Transaction['status'], string> = {
   pending: 'var(--color-warning-light)',
   flagged: 'var(--color-error)',
 }
+
+const TransactionRow = memo(function TransactionRow({ tx }: { tx: Transaction }) {
+  const statusLabel = tx.status.charAt(0).toUpperCase() + tx.status.slice(1)
+
+  return (
+    <div style={s.row}>
+      <span style={s.merchant}>{tx.name}</span>
+      <span>
+        <span className={categoryBadge[tx.category].cls}>
+          {categoryBadge[tx.category].label}
+        </span>
+      </span>
+      <span style={s.date}>{tx.date}</span>
+      <span style={{ ...s.amount, color: tx.amount < 0 ? 'var(--color-error)' : 'var(--color-success)' }}>
+        {tx.amount < 0 ? '-' : '+'}${Math.abs(tx.amount).toLocaleString()}
+      </span>
+      <span
+        style={{ ...s.status, color: statusColor[tx.status] }}
+        aria-label={`Status: ${statusLabel}`}
+      >
+        {statusLabel}
+      </span>
+    </div>
+  )
+})
 
 interface TransactionListProps {
   transactions: Transaction[]
@@ -47,21 +72,7 @@ const TransactionList: FC<TransactionListProps> = ({ transactions, title = 'Rece
 
       {/* Rows */}
       {transactions.map((tx) => (
-        <div key={tx.id} style={s.row}>
-          <span style={s.merchant}>{tx.name}</span>
-          <span>
-            <span className={categoryBadge[tx.category].cls}>
-              {categoryBadge[tx.category].label}
-            </span>
-          </span>
-          <span style={s.date}>{tx.date}</span>
-          <span style={{ ...s.amount, color: tx.amount < 0 ? 'var(--color-error)' : 'var(--color-success)' }}>
-            {tx.amount < 0 ? '-' : '+'}${Math.abs(tx.amount).toLocaleString()}
-          </span>
-          <span style={{ ...s.status, color: statusColor[tx.status] }}>
-            {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-          </span>
-        </div>
+        <TransactionRow key={tx.id} tx={tx} />
       ))}
     </div>
   )

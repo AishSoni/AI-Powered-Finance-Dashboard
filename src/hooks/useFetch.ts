@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useCallback, useEffect, useReducer, useRef, type DependencyList } from 'react'
 
 interface FetchState<T> {
   data: T | null
@@ -15,11 +13,14 @@ type FetchAction<T> =
   | { type: 'FETCH_ERROR'; payload: string }
   | { type: 'RESET' }
 
-/** Delays ms for exponential backoff: attempt 1 → 500ms, 2 → 1000ms, 3 → 2000ms */
 const BACKOFF_DELAYS = [500, 1000, 2000] as const
 const MAX_ATTEMPTS = 3
 
-// ─── Reducer ──────────────────────────────────────────────────────────────────
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
 
 function fetchReducer<T>(
   state: FetchState<T>,
@@ -39,8 +40,6 @@ function fetchReducer<T>(
   }
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-
 export interface UseFetchResult<T> {
   data: T | null
   loading: boolean
@@ -48,23 +47,9 @@ export interface UseFetchResult<T> {
   refetch: () => void
 }
 
-/**
- * Generic data-fetching hook with automatic retry (exponential backoff).
- *
- * @template T - Shape of the resolved data
- * @param fetcher - Async function that resolves to `T`
- * @param deps    - Dependency array that re-triggers the fetch (default: `[]`)
- * @returns `{ data, loading, error, refetch }`
- *
- * @example
- * const { data, loading, error, refetch } = useFetch(
- *   () => fetch('/api/portfolio').then(r => r.json()),
- *   [clientId]
- * )
- */
 export function useFetch<T>(
   fetcher: () => Promise<T>,
-  deps: React.DependencyList = [],
+  deps: DependencyList = [],
 ): UseFetchResult<T> {
   const initialState: FetchState<T> = {
     data: null,
@@ -74,59 +59,53 @@ export function useFetch<T>(
   }
 
   const [state, dispatch] = useReducer(
-    (s: FetchState<T>, a: FetchAction<T>) => fetchReducer(s, a),
+    (currentState: FetchState<T>, action: FetchAction<T>) => fetchReducer(currentState, action),
     initialState,
   )
 
-  // Stable ref to the fetcher so the effect dep array stays clean
-  const fetcherRef = useRef(fetcher)
-  fetcherRef.current = fetcher
-
-  // Used to bail out of state updates after unmount
   const isMountedRef = useRef(true)
-  // Tracks retry timeout so we can cancel it on unmount
-  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const requestIdRef = useRef(0)
 
-  const execute = useCallback(async (currentAttempt: number = 0) => {
-    if (!isMountedRef.current) return
-
+  const execute = useCallback(async () => {
+    const requestId = requestIdRef.current + 1
+    requestIdRef.current = requestId
     dispatch({ type: 'FETCH_START' })
 
-    try {
-      const result = await fetcherRef.current()
-      if (isMountedRef.current) dispatch({ type: 'FETCH_SUCCESS', payload: result })
-    } catch (err) {
-      if (!isMountedRef.current) return
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+      try {
+        const result = await fetcher()
+        if (isMountedRef.current && requestIdRef.current === requestId) {
+          dispatch({ type: 'FETCH_SUCCESS', payload: result })
+        }
+        return
+      } catch (error) {
+        if (attempt < MAX_ATTEMPTS - 1) {
+          await delay(BACKOFF_DELAYS[attempt] ?? BACKOFF_DELAYS[BACKOFF_DELAYS.length - 1])
+          continue
+        }
 
-      const nextAttempt = currentAttempt + 1
-
-      if (nextAttempt < MAX_ATTEMPTS) {
-        const delay = BACKOFF_DELAYS[currentAttempt] ?? BACKOFF_DELAYS[BACKOFF_DELAYS.length - 1]
-        retryTimeoutRef.current = setTimeout(() => execute(nextAttempt), delay)
-      } else {
-        const message =
-          err instanceof Error ? err.message : 'An unexpected error occurred'
-        dispatch({ type: 'FETCH_ERROR', payload: message })
+        if (isMountedRef.current && requestIdRef.current === requestId) {
+          const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+          dispatch({ type: 'FETCH_ERROR', payload: message })
+        }
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [fetcher])
 
   useEffect(() => {
     isMountedRef.current = true
-    execute(0)
+    execute()
 
     return () => {
       isMountedRef.current = false
-      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current)
+      requestIdRef.current += 1
       dispatch({ type: 'RESET' })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
+  }, [execute, ...deps])
 
   const refetch = useCallback(() => {
-    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current)
-    execute(0)
+    void execute()
   }, [execute])
 
   return { data: state.data, loading: state.loading, error: state.error, refetch }

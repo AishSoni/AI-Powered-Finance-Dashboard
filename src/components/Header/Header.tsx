@@ -1,6 +1,6 @@
-import { type CSSProperties, type FC, useRef } from 'react'
+import { type ChangeEvent, type CSSProperties, type FC, useCallback, useEffect, useRef } from 'react'
 import { Search, Bell, Settings, Sun, Moon } from 'lucide-react'
-import { useTheme } from '@/context/ThemeContext'
+import { useTheme } from '@/context/theme'
 import { useDebounce, useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
 import { useState } from 'react'
 
@@ -29,16 +29,27 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
   const debouncedQuery = useDebounce(rawQuery, 300)
   const prevQueryRef   = useRef('')
 
-  // Trigger search event when debounced value actually changes
-  if (debouncedQuery !== prevQueryRef.current) {
+  useEffect(() => {
+    if (debouncedQuery === prevQueryRef.current) return
     prevQueryRef.current = debouncedQuery
-    if (debouncedQuery.trim()) trackSearch(debouncedQuery)
-  }
 
-  const handleThemeToggle = () => {
+    const term = debouncedQuery.trim()
+    if (term) trackSearch(term)
+  }, [debouncedQuery, trackSearch])
+
+  const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setRawQuery(event.target.value)
+  }, [])
+
+  const handleTabClick = useCallback((tab: Tab) => {
+    setActiveTab(tab)
+  }, [])
+
+  const handleThemeToggle = useCallback(() => {
+    const newTheme = isDark ? 'light' : 'dark'
     toggleTheme()
-    trackEvent(ANALYTICS_EVENTS.THEME_TOGGLED, { to: isDark ? 'light' : 'dark' })
-  }
+    trackEvent(ANALYTICS_EVENTS.THEME_TOGGLED, { newTheme })
+  }, [isDark, toggleTheme, trackEvent])
 
   return (
     <div style={s.bar} role="banner">
@@ -47,29 +58,29 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
       <div style={s.centre}>
         {/* Search */}
         <div style={s.searchWrap} role="search">
+          <label htmlFor="global-search" className="sr-only">Search portfolio or markets</label>
           <span style={s.searchIcon} aria-hidden="true">
-            <Search size={15} strokeWidth={2} />
+            <Search size={15} strokeWidth={2} aria-hidden="true" />
           </span>
           <input
-            id="header-search"
+            id="global-search"
             type="search"
             style={s.searchInput}
             placeholder="Search portfolio or markets..."
             value={rawQuery}
-            onChange={e => setRawQuery(e.target.value)}
-            aria-label="Search portfolio or markets"
+            onChange={handleSearchChange}
             autoComplete="off"
             spellCheck={false}
           />
         </div>
 
         {/* Tab nav */}
-        <nav style={s.tabs} aria-label="Section navigation">
+        <nav style={s.tabs} aria-label="Tab navigation">
           {TABS.map(tab => (
             <button
               key={tab}
               style={tab === activeTab ? { ...s.tab, ...s.tabActive } : s.tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabClick(tab)}
               aria-current={tab === activeTab ? 'true' : undefined}
             >
               {tab}
@@ -87,7 +98,7 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
           aria-label={`${unreadAlerts} unread alerts`}
         >
           <span style={s.bellWrap}>
-            <Bell size={18} strokeWidth={1.75} />
+            <Bell size={18} strokeWidth={1.75} aria-hidden="true" />
             {unreadAlerts > 0 && (
               <span style={s.notifDot} aria-hidden="true" />
             )}
@@ -102,13 +113,13 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {isDark
-            ? <Sun  size={18} strokeWidth={1.75} />
-            : <Moon size={18} strokeWidth={1.75} />}
+            ? <Sun  size={18} strokeWidth={1.75} aria-hidden="true" />
+            : <Moon size={18} strokeWidth={1.75} aria-hidden="true" />}
         </button>
 
         {/* Settings */}
         <button style={s.settingsBtn} aria-label="Settings">
-          <Settings size={15} strokeWidth={1.75} />
+          <Settings size={15} strokeWidth={1.75} aria-hidden="true" />
           <span>Settings</span>
         </button>
 

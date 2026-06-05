@@ -1,4 +1,4 @@
-import { memo, type CSSProperties } from 'react'
+import { memo, useCallback, type CSSProperties } from 'react'
 import { AlertTriangle, Info, TrendingDown, X } from 'lucide-react'
 import { useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
 
@@ -29,18 +29,21 @@ interface AlertItemProps {
   compact: boolean
 }
 
-function AlertItem({ alert, compact }: AlertItemProps) {
+const AlertItem = memo(function AlertItem({ alert, compact }: AlertItemProps) {
   const { trackEvent } = useAnalytics()
   const { Icon, color, bg } = ICON_MAP[alert.severity]
 
-  const handleDismiss = () => {
-    trackEvent(ANALYTICS_EVENTS.ALERT_DISMISSED, { alert_id: alert.id })
-  }
+  const handleDismiss = useCallback(() => {
+    trackEvent(ANALYTICS_EVENTS.ALERT_DISMISSED, {
+      severity: alert.severity,
+      id: alert.id,
+    })
+  }, [alert.id, alert.severity, trackEvent])
 
   return (
     <div style={s.item}>
       {/* Icon badge */}
-      <div style={{ ...s.iconWrap, background: bg }}>
+      <div style={{ ...s.iconWrap, background: bg }} aria-hidden="true">
         <Icon size={14} color={color} strokeWidth={2} />
       </div>
 
@@ -59,7 +62,7 @@ function AlertItem({ alert, compact }: AlertItemProps) {
       )}
     </div>
   )
-}
+})
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -89,7 +92,7 @@ export const ActiveAlertsPreview = memo(function ActiveAlertsPreview({
   compact = true,
 }: ActiveAlertsPreviewProps) {
   return (
-    <section style={s.panel} aria-label="Active Alerts">
+    <section style={s.panel} aria-live="polite" aria-label="Active financial alerts">
 
       {/* Header */}
       <div style={s.header}>
@@ -101,7 +104,11 @@ export const ActiveAlertsPreview = memo(function ActiveAlertsPreview({
 
       <div style={s.list}>
         {/* Loading skeletons */}
-        {loading && [0, 1, 2].map((i) => <AlertSkeleton key={i} />)}
+        {loading && (
+          <div role="status" aria-label="Loading financial data">
+            {[0, 1, 2].map((i) => <AlertSkeleton key={i} />)}
+          </div>
+        )}
 
         {/* Empty state */}
         {!loading && (!alerts || alerts.length === 0) && (

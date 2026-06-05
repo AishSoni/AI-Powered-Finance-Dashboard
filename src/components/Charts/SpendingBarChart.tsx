@@ -1,7 +1,7 @@
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { type CSSProperties } from 'react'
 
-interface SpendingBarChartProps {
+export interface SpendingBarChartProps {
   data?: Array<{ month: string; amount: number; isCurrent?: boolean }>
 }
 
@@ -22,33 +22,22 @@ const SpendingBarChart = ({ data = defaultData }: SpendingBarChartProps) => {
             axisLine={false}
             tickLine={false}
             tick={{ fill: 'var(--color-text-tertiary)', fontSize: 11 }}
-            tickFormatter={(value) => `₹${value}`}
+            tickFormatter={(value) => `Rs ${value}`}
           />
           <Tooltip
             contentStyle={s.tooltip}
             itemStyle={{ color: 'var(--color-text-primary)' }}
-            formatter={(value: any) => `₹${Number(value).toLocaleString()}`}
+            formatter={(value: unknown) => `Rs ${Number(value ?? 0).toLocaleString()}`}
             labelStyle={{ color: 'var(--color-text-secondary)' }}
           />
-          <Bar
-            dataKey="amount"
-            fill="var(--color-primary)"
-            radius={[4, 4, 0, 0]}
-            shape={(props: any) => {
-              const { isCurrent } = data[props.index] || {}
-              return (
-                <rect
-                  x={props.x}
-                  y={props.y}
-                  width={props.width}
-                  height={props.height}
-                  fill={isCurrent ? 'var(--color-warning-light)' : 'var(--color-primary)'}
-                  rx={4}
-                  ry={4}
-                />
-              )
-            }}
-          />
+          <Bar dataKey="amount" fill="var(--color-primary)" radius={[4, 4, 0, 0]}>
+            {data.map((entry) => (
+              <Cell
+                key={entry.month}
+                fill={entry.isCurrent ? 'var(--color-warning-light)' : 'var(--color-primary)'}
+              />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>

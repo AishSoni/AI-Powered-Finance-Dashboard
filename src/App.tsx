@@ -1,22 +1,36 @@
 import '@/styles/globals.css'
-import { useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import { ThemeProvider } from '@/context/ThemeContext'
 import DashboardLayout from '@/components/Layout/DashboardLayout'
 import Header from '@/components/Header/Header'
 import Dashboard from '@/pages/Dashboard'
 import { MobileBottomNav } from '@/components/Layout/MobileBottomNav'
+import { ChartSkeleton } from '@/components/Charts'
+import ErrorBoundary from '@/components/common/ErrorBoundary'
+import { useAnalytics } from '@/hooks'
 
-// ── Page registry — extend as new pages are built ─────────────────────────────
-const PAGES: Record<string, React.ReactNode> = {
-  dashboard:    <Dashboard />,
-  accounts:     <Dashboard />, 
-  transactions: <Dashboard />, 
-  budgets:      <Dashboard />,
-  insights:     <Dashboard />, 
+const BudgetPage = lazy(() => import('@/pages/BudgetPage'))
+const InsightsPage = lazy(() => import('@/pages/InsightsPage'))
+
+const PAGES: Record<string, ComponentType> = {
+  dashboard: Dashboard,
+  accounts: Dashboard,
+  transactions: Dashboard,
+  budgets: BudgetPage,
+  insights: InsightsPage,
 }
 
 function AppShell() {
   const [activePage, setActivePage] = useState('dashboard')
+  const { trackPageView } = useAnalytics()
+  const trackedInitialPage = useRef(false)
+  const ActivePage = useMemo(() => PAGES[activePage] ?? Dashboard, [activePage])
+
+  useEffect(() => {
+    if (trackedInitialPage.current) return
+    trackedInitialPage.current = true
+    trackPageView('dashboard', 'Proton Finance Dashboard')
+  }, [trackPageView])
 
   return (
     <>
@@ -25,7 +39,9 @@ function AppShell() {
         onNavigate={setActivePage}
         headerSlot={<Header unreadAlerts={3} />}
       >
-        {PAGES[activePage] ?? <Dashboard />}
+        <Suspense fallback={<ChartSkeleton height={240} />}>
+          <ActivePage />
+        </Suspense>
       </DashboardLayout>
       <MobileBottomNav />
     </>
@@ -35,7 +51,9 @@ function AppShell() {
 function App() {
   return (
     <ThemeProvider>
-      <AppShell />
+      <ErrorBoundary>
+        <AppShell />
+      </ErrorBoundary>
     </ThemeProvider>
   )
 }

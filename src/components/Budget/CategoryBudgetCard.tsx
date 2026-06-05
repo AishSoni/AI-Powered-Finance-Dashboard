@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, type CSSProperties } from 'react'
+import { memo, useEffect, useMemo, useState, type CSSProperties } from 'react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,8 +47,8 @@ export const CategoryBudgetCard = memo(function CategoryBudgetCard({
   limit,
 }: CategoryBudgetCardProps) {
   const [progressWidth, setProgressWidth] = useState(0)
-  const percentage = Math.round((spent / limit) * 100)
-  const config = STATUS_CONFIG[status]
+  const percentage = useMemo(() => Math.round((spent / limit) * 100), [limit, spent])
+  const config = useMemo(() => STATUS_CONFIG[status], [status])
 
   // Animate progress bar on mount
   useEffect(() => {
@@ -63,10 +63,13 @@ export const CategoryBudgetCard = memo(function CategoryBudgetCard({
       {/* Top row: icon + category name | status badge */}
       <div style={s.header}>
         <div style={s.categoryRow}>
-          <div style={{ ...s.icon, background: iconColor }} />
+          <div style={{ ...s.icon, background: iconColor }} aria-hidden="true" />
           <span style={s.categoryName}>{category}</span>
         </div>
-        <div style={{ ...s.statusBadge, background: config.bg, color: config.color }}>
+        <div
+          style={{ ...s.statusBadge, background: config.bg, color: config.color }}
+          aria-label={`Status: ${status.charAt(0)}${status.slice(1).toLowerCase()}`}
+        >
           {status}
         </div>
       </div>
@@ -78,7 +81,14 @@ export const CategoryBudgetCard = memo(function CategoryBudgetCard({
       </div>
 
       {/* Progress bar */}
-      <div style={s.track}>
+      <div
+        style={s.track}
+        role="progressbar"
+        aria-valuenow={percentage}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`${category} budget progress`}
+      >
         <div
           style={{
             ...s.fill,

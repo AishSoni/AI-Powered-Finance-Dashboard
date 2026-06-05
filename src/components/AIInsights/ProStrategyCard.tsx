@@ -1,4 +1,4 @@
-import { memo, type CSSProperties } from 'react'
+import { memo, useCallback, type CSSProperties } from 'react'
 import { useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -20,13 +20,13 @@ export const ProStrategyCard = memo(function ProStrategyCard({
 }: ProStrategyCardProps) {
   const { trackCTAClick, trackEvent } = useAnalytics()
 
-  const handleExecute = () => {
+  const handleExecute = useCallback(() => {
     trackCTAClick('Execute Strategy', insightId)
-  }
+  }, [insightId, trackCTAClick])
 
-  const handleReview = () => {
+  const handleReview = useCallback(() => {
     trackEvent(ANALYTICS_EVENTS.REVIEW_AUDIT_CLICKED, { insight_id: insightId })
-  }
+  }, [insightId, trackEvent])
 
   return (
     <article style={s.card} aria-label="Pro Strategy Insight">
