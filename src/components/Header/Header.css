@@ -1,0 +1,115 @@
+/* ═══════════════════════════════════════════════════════
+   Header.css — Responsive header styles
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Mobile (< 640px) ─────────────────────────────────── */
+@media (max-width: 639px) {
+  /* Show hamburger menu button */
+  .header-menu-btn {
+    display: flex !important;
+  }
+
+  /* Show search toggle icon */
+  .header-search-toggle {
+    display: flex !important;
+  }
+
+  /* Hide desktop search + tabs in main bar */
+  .header-centre {
+    display: none !important;
+  }
+
+  /* Hide settings button text */
+  .header-settings-label {
+    display: none;
+  }
+
+  /* Hide settings btn on very small screens */
+  .header-settings-btn {
+    display: none !important;
+  }
+
+  /* Hide vertical divider */
+  .header-vdivider {
+    display: none !important;
+  }
+
+  /* Hide username, just show avatar */
+  .header-username {
+    display: none !important;
+  }
+}
+
+/* ── Small tablets (640px – 767px) ───────────────────── */
+@media (min-width: 640px) and (max-width: 767px) {
+  .header-menu-btn {
+    display: flex !important;
+  }
+
+  .header-centre {
+    display: none !important;
+  }
+
+  .header-search-toggle {
+    display: flex !important;
+  }
+
+  .header-settings-btn {
+    display: none !important;
+  }
+
+  .header-username {
+    display: none !important;
+  }
+
+  .header-vdivider {
+    display: none !important;
+  }
+}
+
+/* ── Tablets (768px – 1023px) ────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header-centre {
+    display: flex !important;
+  }
+
+  /* Shrink search box */
+  #global-search {
+    width: 200px !important;
+  }
+
+  .header-settings-btn {
+    display: none !important;
+  }
+
+  .header-username {
+    display: none !important;
+  }
+
+  .header-vdivider {
+    display: none !important;
+  }
+
+  .header-menu-btn {
+    display: none !important;
+  }
+
+  .header-search-toggle {
+    display: none !important;
+  }
+}
+
+/* ── Desktop (>= 1024px): full header, hide mobile elements ── */
+@media (min-width: 1024px) {
+  .header-menu-btn {
+    display: none !important;
+  }
+
+  .header-search-toggle {
+    display: none !important;
+  }
+
+  .header-search-overlay {
+    display: none !important;
+  }
+}

@@ -309,3 +309,50 @@
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ─── Responsive: MetricRow grid ──────────────────────────────────────────────
+   MetricRow uses inline styles so we target it via the dashboard-metric-col
+   parent and force the inner grid to reflow.                                   */
+@media (max-width: 639px) {
+  /* Stack metric cards */
+  [aria-label="Key financial metrics"],
+  [aria-label="Loading metrics"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Page heading actions: stack on mobile */
+  .page-header-actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .page-header-actions > button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Two column metric cards on tablet */
+  [aria-label="Key financial metrics"],
+  [aria-label="Loading metrics"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ─── Responsive: Bento grid utilities ───────────────────────────────────────── */
+@media (max-width: 767px) {
+  .bento-grid-2,
+  .bento-grid-3,
+  .bento-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .bento-grid-3,
+  .bento-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

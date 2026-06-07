@@ -1,8 +1,8 @@
-import { type ChangeEvent, type CSSProperties, type FC, useCallback, useEffect, useRef } from 'react'
-import { Search, Bell, Settings, Sun, Moon } from 'lucide-react'
+import { type ChangeEvent, type CSSProperties, type FC, useCallback, useEffect, useRef, useState } from 'react'
+import { Search, Bell, Settings, Sun, Moon, Menu, X } from 'lucide-react'
 import { useTheme } from '@/context/theme'
 import { useDebounce, useAnalytics, ANALYTICS_EVENTS } from '@/hooks'
-import { useState } from 'react'
+import './Header.css'
 
 // ─── Tab nav ──────────────────────────────────────────────────────────────────
 
@@ -14,16 +14,20 @@ type Tab = typeof TABS[number]
 interface HeaderProps {
   /** Unread alert count — shows red dot when > 0 */
   unreadAlerts?: number
+  /** On mobile, callback to open the sidebar drawer */
+  onMenuOpen?: () => void
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
+const Header: FC<HeaderProps> = ({ unreadAlerts = 3, onMenuOpen }) => {
   const { isDark, toggleTheme } = useTheme()
   const { trackEvent, trackSearch } = useAnalytics()
 
-  const [rawQuery, setRawQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<Tab>('Portfolio')
+  const [rawQuery, setRawQuery]     = useState('')
+  const [activeTab, setActiveTab]   = useState<Tab>('Portfolio')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchInputRef              = useRef<HTMLInputElement>(null)
 
   // Fire analytics only on settled input — not every keystroke
   const debouncedQuery = useDebounce(rawQuery, 300)
@@ -36,6 +40,11 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
     const term = debouncedQuery.trim()
     if (term) trackSearch(term)
   }, [debouncedQuery, trackSearch])
+
+  // Focus input when search panel opens on mobile
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus()
+  }, [searchOpen])
 
   const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setRawQuery(event.target.value)
@@ -54,8 +63,18 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
   return (
     <div style={s.bar} role="banner">
 
+      {/* ── Left: hamburger (mobile) ── */}
+      <button
+        className="header-menu-btn"
+        style={s.menuBtn}
+        aria-label="Open navigation menu"
+        onClick={onMenuOpen}
+      >
+        <Menu size={20} strokeWidth={1.75} />
+      </button>
+
       {/* ── Centre: search + tabs ── */}
-      <div style={s.centre}>
+      <div className="header-centre" style={s.centre}>
         {/* Search */}
         <div style={s.searchWrap} role="search">
           <label htmlFor="global-search" className="sr-only">Search portfolio or markets</label>
@@ -63,6 +82,7 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
             <Search size={15} strokeWidth={2} aria-hidden="true" />
           </span>
           <input
+            ref={searchInputRef}
             id="global-search"
             type="search"
             style={s.searchInput}
@@ -75,7 +95,7 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
         </div>
 
         {/* Tab nav */}
-        <nav style={s.tabs} aria-label="Tab navigation">
+        <nav className="header-tabs" style={s.tabs} aria-label="Tab navigation">
           {TABS.map(tab => (
             <button
               key={tab}
@@ -88,6 +108,16 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
           ))}
         </nav>
       </div>
+
+      {/* ── Mobile search toggle ── */}
+      <button
+        className="header-search-toggle"
+        style={s.searchToggle}
+        aria-label="Toggle search"
+        onClick={() => setSearchOpen(o => !o)}
+      >
+        {searchOpen ? <X size={18} strokeWidth={1.75} /> : <Search size={18} strokeWidth={1.75} />}
+      </button>
 
       {/* ── Right: actions ── */}
       <div style={s.right}>
@@ -117,23 +147,44 @@ const Header: FC<HeaderProps> = ({ unreadAlerts = 3 }) => {
             : <Moon size={18} strokeWidth={1.75} aria-hidden="true" />}
         </button>
 
-        {/* Settings */}
-        <button style={s.settingsBtn} aria-label="Settings">
+        {/* Settings — hidden on small mobile */}
+        <button className="header-settings-btn" style={s.settingsBtn} aria-label="Settings">
           <Settings size={15} strokeWidth={1.75} aria-hidden="true" />
-          <span>Settings</span>
+          <span className="header-settings-label">Settings</span>
         </button>
 
         {/* Divider */}
-        <div style={s.vDivider} role="separator" />
+        <div className="header-vdivider" style={s.vDivider} role="separator" />
 
         {/* User */}
         <div style={s.user}>
           <div style={s.avatar} aria-label="User avatar: Alexander Sterling">
             AS
           </div>
-          <span style={s.userName}>Alexander Sterling</span>
+          <span className="header-username" style={s.userName}>Alexander Sterling</span>
         </div>
       </div>
+
+      {/* ── Mobile search overlay ── */}
+      {searchOpen && (
+        <div className="header-search-overlay" style={s.searchOverlay}>
+          <div style={s.searchWrap} role="search">
+            <span style={s.searchIcon} aria-hidden="true">
+              <Search size={15} strokeWidth={2} />
+            </span>
+            <input
+              type="search"
+              style={s.searchInput}
+              placeholder="Search portfolio or markets..."
+              value={rawQuery}
+              onChange={handleSearchChange}
+              autoComplete="off"
+              spellCheck={false}
+              autoFocus
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -144,15 +195,31 @@ export default Header
 
 const s: Record<string, CSSProperties> = {
   bar: {
-    height:        56,
+    minHeight:     56,
     display:       'flex',
     alignItems:    'center',
     justifyContent:'flex-end',
-    padding:       '0 24px',
+    padding:       '0 16px',
     background:    'var(--color-bg-surface)',
     borderBottom:  '1px solid var(--color-border)',
-    gap:           16,
+    gap:            12,
     flexShrink:    0,
+    position:      'relative',
+    flexWrap:      'wrap',
+  },
+
+  menuBtn: {
+    display:        'none',  // shown via CSS media query
+    width:           36,
+    height:          36,
+    border:         'none',
+    borderRadius:   'var(--radius-md)',
+    background:     'transparent',
+    color:          'var(--color-text-secondary)',
+    cursor:         'pointer',
+    alignItems:     'center',
+    justifyContent: 'center',
+    flexShrink:     0,
   },
 
   // Centre cluster
@@ -160,15 +227,16 @@ const s: Record<string, CSSProperties> = {
     flex:       1,
     display:    'flex',
     alignItems: 'center',
-    gap:        16,
-    minWidth:   0,
+    gap:         16,
+    minWidth:    0,
   },
 
   // Search
   searchWrap: {
     position:   'relative',
     width:       320,
-    flexShrink:  0,
+    maxWidth:   '100%',
+    flexShrink:  1,
     display:    'flex',
     alignItems: 'center',
   },
@@ -212,10 +280,26 @@ const s: Record<string, CSSProperties> = {
     borderBottom:   '2px solid transparent',
     transition:     'color 0.12s ease, border-color 0.12s ease',
     paddingBottom:   6,
+    whiteSpace:     'nowrap',
   },
   tabActive: {
     color:        'var(--color-text-primary)',
     borderBottom: '2px solid var(--color-primary)',
+  },
+
+  // Mobile search toggle (hidden on desktop via CSS)
+  searchToggle: {
+    display:        'none',
+    width:           36,
+    height:          36,
+    border:         'none',
+    borderRadius:   'var(--radius-md)',
+    background:     'transparent',
+    color:          'var(--color-text-secondary)',
+    cursor:         'pointer',
+    alignItems:     'center',
+    justifyContent: 'center',
+    flexShrink:     0,
   },
 
   // Right section
@@ -311,5 +395,18 @@ const s: Record<string, CSSProperties> = {
     fontWeight:  500,
     color:      'var(--color-text-primary)',
     whiteSpace: 'nowrap',
+  },
+
+  // Mobile search overlay
+  searchOverlay: {
+    position:   'absolute',
+    top:         '100%',
+    left:         0,
+    right:        0,
+    padding:    '10px 16px',
+    background: 'var(--color-bg-surface)',
+    borderBottom:'1px solid var(--color-border)',
+    zIndex:      200,
+    boxShadow:  'var(--shadow-elevated)',
   },
 }

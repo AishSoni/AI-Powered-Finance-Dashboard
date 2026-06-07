@@ -1,18 +1,33 @@
-/* Mobile: hide sidebar, full width main */
+/* ═══════════════════════════════════════════════════════
+   DashboardLayout.css
+   JS (isMobile state + conditional render) is the
+   primary mechanism. These rules are a hard CSS fallback.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Mobile: force desktop aside off-screen if JS fails ─ */
 @media (max-width: 767px) {
-  .dashboard-shell > aside {
-    display: none;
+  aside.desktop-sidebar-aside {
+    display:        none !important;
+    visibility:     hidden !important;
+    pointer-events: none !important;
   }
-  
+
   .dashboard-main {
     margin-left: 0 !important;
-    padding-bottom: 60px; /* Space for bottom nav */
+    /* Room for mobile bottom nav */
+    padding-bottom: 68px;
   }
 }
 
-/* Desktop: sidebar visible, bottom nav hidden */
+/* ── Desktop: hide any mobile-only elements ─────────────── */
 @media (min-width: 768px) {
+  aside.mobile-sidebar-aside {
+    display:        none !important;
+    visibility:     hidden !important;
+    pointer-events: none !important;
+  }
+
   .mobile-bottom-nav {
-    display: none;
+    display: none !important;
   }
 }

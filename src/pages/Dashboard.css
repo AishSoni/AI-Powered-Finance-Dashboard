@@ -1,47 +1,189 @@
-/* Mobile responsive styles for Dashboard */
+/* ═══════════════════════════════════════════════════════════════
+   Dashboard.css — Responsive layout overrides
+   All inline styles use !important to override JS-set values
+   ═══════════════════════════════════════════════════════════════ */
 
-@media (max-width: 767px) {
-  /* Page: single column, reduced padding */
+/* ── Shared: MetricCard padding compress on small cards ───────── */
+.metric-row > * > article {
+  padding: 20px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DESKTOP LARGE  ≥ 1280px  — default (inline styles apply)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+   DESKTOP MEDIUM  1024px – 1279px
+   ══════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  /* Tighten the 3-col bento slightly */
+  .dashboard-row3 {
+    grid-template-columns: 260px 1fr 220px !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-row4 {
+    gap: 12px !important;
+  }
+
+  /* Alert col narrower */
+  .dashboard-alert-col {
+    width: 210px !important;
+  }
+
+  /* Metric grid: equal thirds to avoid hero overflow */
+  .metric-row {
+    grid-template-columns: 1.4fr 1fr 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABLET LARGE  768px – 1023px  (sidebar=60px collapsed)
+   ══════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1023px) {
   .dashboard-page {
     padding: 16px !important;
+    gap: 14px !important;
   }
 
-  /* Row 1: stack vertically */
+  /* Row 1: stack alerts below metrics */
   .dashboard-row1 {
     flex-direction: column !important;
+    gap: 12px !important;
   }
 
-  .dashboard-metric-col {
-    width: 100% !important;
-  }
-
+  .dashboard-metric-col,
   .dashboard-alert-col {
     width: 100% !important;
   }
 
-  /* Strategy card: full width */
-  .dashboard-strategy-card {
-    width: 100%;
+  /* Metric row: 3 equal cols */
+  .metric-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
   }
 
-  /* Row 3: stack vertically */
+  /* Compress metric card padding */
+  .metric-row > * > article {
+    padding: 16px !important;
+  }
+
+  /* Row 3: 2-col, budget spans full */
   .dashboard-row3 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-col3c {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Row 4: 2-col */
+  .dashboard-row4 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE LARGE  640px – 767px
+   ══════════════════════════════════════════════════════════════ */
+@media (min-width: 640px) and (max-width: 767px) {
+  .dashboard-page {
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-row1 {
+    flex-direction: column !important;
+  }
+
+  .dashboard-metric-col,
+  .dashboard-alert-col {
+    width: 100% !important;
+  }
+
+  /* Metric row: 3 equal columns */
+  .metric-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .metric-row > * > article {
+    padding: 14px !important;
+  }
+
+  /* All bento rows stack to 2-col */
+  .dashboard-row3 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .dashboard-col3c {
+    grid-column: 1 / -1 !important;
+  }
+
+  .dashboard-row4 {
     grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE SMALL  < 640px
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 639px) {
+  .dashboard-page {
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  /* Row 1: full stack */
+  .dashboard-row1 {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .dashboard-metric-col,
+  .dashboard-alert-col {
+    width: 100% !important;
+  }
+
+  /* Metric row: 1 column on very small, 2 col if fits */
+  .metric-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .metric-row > * > article {
+    padding: 14px 12px !important;
+  }
+
+  /* Row 3 & 4: single column */
+  .dashboard-row3,
+  .dashboard-row4 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
   }
 
   .dashboard-col3a,
   .dashboard-col3b,
-  .dashboard-col3c {
-    width: 100% !important;
-  }
-
-  /* Row 4: stack vertically */
-  .dashboard-row4 {
-    grid-template-columns: 1fr !important;
-  }
-
+  .dashboard-col3c,
   .dashboard-spending-col,
   .dashboard-activity-col {
     width: 100% !important;
+  }
+
+  /* Page header: stack title + actions */
+  .page-header-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .page-header-actions > button {
+    width: 100% !important;
+    justify-content: center !important;
   }
 }

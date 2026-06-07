@@ -26,7 +26,7 @@ export default function MetricRow() {
 
   if (loading || !data) {
     return (
-      <div style={s.row} aria-label="Loading metrics">
+      <div className="metric-row" style={s.row} aria-label="Loading metrics">
         <div style={s.heroCell}><MetricCardSkeleton hero /></div>
         <div style={s.cell}><MetricCardSkeleton /></div>
         <div style={s.cell}><MetricCardSkeleton /></div>
@@ -35,7 +35,7 @@ export default function MetricRow() {
   }
 
   return (
-    <div style={s.row} aria-label="Key financial metrics">
+    <div className="metric-row" style={s.row} aria-label="Key financial metrics">
       {/* Net Worth — hero card, wider */}
       <div style={s.heroCell}>
         <MetricCard

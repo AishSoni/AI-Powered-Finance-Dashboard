@@ -129,9 +129,10 @@
   --shadow-sidebar:  4px 0 24px rgba(0, 0, 0, 0.5);
 
   /* === Layout === */
-  --sidebar-width:    240px;
-  --header-height:    64px;
-  --content-max-width: 1440px;
+  --sidebar-width:           240px;
+  --sidebar-collapsed-width: 60px;
+  --header-height:           64px;
+  --content-max-width:       1440px;
 
   /* === Transitions === */
   --transition-fast:   all 0.12s ease;

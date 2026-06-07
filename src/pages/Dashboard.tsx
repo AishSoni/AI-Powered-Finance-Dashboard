@@ -149,7 +149,7 @@ const s: Record<string, CSSProperties> = {
     alignItems: 'flex-start',
   },
   metricCol: { flex: 1, minWidth: 0 },
-  alertCol:  { width: 260, flexShrink: 0 },
+  alertCol:  { width: 240, flexShrink: 0 },
 
   // Row 3: 3-col bento
   row3: {

@@ -143,18 +143,26 @@ const s: Record<string, CSSProperties> = {
     letterSpacing:'0.08em',
   },
   value: {
-    font:         'var(--font-display-md)',
+    fontSize:     'clamp(1.35rem, 3vw, 2rem)',
     fontFamily:   'var(--font-family)',
+    fontWeight:    700,
     color:        'var(--color-text-primary)',
     letterSpacing:'-0.03em',
     lineHeight:    1.05,
+    overflow:     'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace:   'nowrap',
   },
   valueHero: {
-    font:         'var(--font-display-lg)',
+    fontSize:     'clamp(1.6rem, 3.5vw, 2.75rem)',
     fontFamily:   'var(--font-family)',
+    fontWeight:    700,
     color:        'var(--color-text-primary)',
     letterSpacing:'-0.03em',
     lineHeight:    1.05,
+    overflow:     'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace:   'nowrap',
   },
 }
 

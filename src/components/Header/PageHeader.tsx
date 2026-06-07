@@ -13,7 +13,7 @@ const Header: FC<HeaderProps> = ({ title, subtitle, actions }) => {
         <h1 style={s.title}>{title}</h1>
         {subtitle && <p style={s.subtitle}>{subtitle}</p>}
       </div>
-      {actions && <div style={s.actions}>{actions}</div>}
+      {actions && <div className="page-header-actions" style={s.actions}>{actions}</div>}
     </header>
   )
 }
